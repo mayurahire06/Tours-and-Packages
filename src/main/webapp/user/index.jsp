@@ -43,33 +43,26 @@
     ResultSet rs = null;
     try {
         conn = DBConnection.getConnection();
-        String query = "SELECT t.t_id, t.title, t.descr, GROUP_CONCAT(i.image_path SEPARATOR ',') AS image_path " +
-                       "FROM tour t " +
-                       "LEFT JOIN Images i ON t.t_id = i.t_id GROUP BY t.t_id";
+        // Fetch the first image for each tour
+        String query = "SELECT t.t_id, t.title, t.descr, " +
+                       "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS image_path " +
+                       "FROM tour t";
         pstmt = conn.prepareStatement(query);
         rs = pstmt.executeQuery();
 
         while (rs.next()) {
-            String imagePaths = rs.getString("image_path");
-            String firstImage = "../images/1.jpeg"; // Default image
-            
-            if (imagePaths != null && !imagePaths.trim().isEmpty()) {
-                String[] images = imagePaths.split(",");
-                firstImage = images[0].trim();
-                // Fix the image path
-                firstImage = firstImage.replace("\\", "/").replace("./", "");
+            String imagePath = rs.getString("image_path");
+            String defaultImage = "../images/1.jpeg"; // Default image path
+            String imageUrl = defaultImage; // Default to the default image
+
+            if (imagePath != null && !imagePath.trim().isEmpty()) {
+                // Fix the image path for the browser
+                imageUrl = request.getContextPath() + "/" + imagePath.replace("\\", "/").replace("./", "");
             }
-            
-            // Debugging: Print out the image paths
-           // System.out.println("Image Paths: " + imagePaths);
-           // System.out.println("First Image: " + firstImage);
-            
-            String imageUrl = request.getContextPath() + "/" + firstImage;
-            //System.out.println("Final Image URL: " + imageUrl);
 %>
-            <div class="col-md-4">
+            <div class="col-md-4 mb-4">
                 <div class="card package-card">
-                    <img src="<%= (imagePaths != null && !imagePaths.isEmpty()) ? imageUrl : firstImage %>" class="card-img-top" alt="Package Image">
+                    <img src="<%= imageUrl %>" class="card-img-top" alt="Package Image">
                     <div class="card-body">
                         <h5 class="card-title"><%= rs.getString("title") %></h5>
                         <p class="card-text"><%= rs.getString("descr") %></p>
@@ -77,7 +70,7 @@
                     </div>
                 </div>
             </div>
-<% 
+<%
         }
     } catch (Exception e) {
         e.printStackTrace();
@@ -91,7 +84,6 @@
         }
     }
 %>
-
     </div>
 </section>
 

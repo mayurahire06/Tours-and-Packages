@@ -22,6 +22,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="loginRegister.jsp">Login</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.jsp">Logout</a>
+                    </li>
                 </ul>
             </div>
         </div>
