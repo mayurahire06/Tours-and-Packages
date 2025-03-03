@@ -1,6 +1,7 @@
 package com.mh.backend;
 
 import com.mh.DBConnection;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,9 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+//import java.util.List;
 //import java.util.Collection;
 //import java.util.stream.Collectors;
 import java.sql.Date;
@@ -312,11 +313,11 @@ public class AddTour extends HttpServlet {
         return imagePath;
     }
     
-   //for multiple images
-   private void uploadImages(HttpServletRequest request, HttpServletResponse response, int tourId, Connection conn) throws ServletException, IOException {
-        
-    	String UPLOAD_DIR = ".\\tour_uploads";
-    	String uploadPath = System.getProperty("user.dir") + File.separator + UPLOAD_DIR;
+    
+  //for multiple images
+    private void uploadImages(HttpServletRequest request, HttpServletResponse response, int tourId, Connection conn) throws ServletException, IOException {
+        String UPLOAD_DIR = "tour_uploads"; // Directory inside webapps
+        String uploadPath = getServletContext().getRealPath("/") + UPLOAD_DIR;
 
         // Create directory if it doesn't exist
         File uploadDir = new File(uploadPath);
@@ -331,8 +332,6 @@ public class AddTour extends HttpServlet {
             response.getWriter().println("Error retrieving files: " + e.getMessage());
             return;
         }
-
-        List<String> imagePaths = new ArrayList<>(); // List to store image paths
 
         for (Part filePart : fileParts) {
             if ("images".equals(filePart.getName()) && filePart.getSize() > 0) {
@@ -350,27 +349,139 @@ public class AddTour extends HttpServlet {
                     }
                 }
 
-                // Add relative file path to list
-                imagePaths.add(filePath);
+                // Insert relative image path into the database
+                String sql = "INSERT INTO images (t_id, image_path) VALUES (?, ?)";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, tourId);
+                    stmt.setString(2, filePath);
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    response.getWriter().println("Database Error: " + e.getMessage());
+                }
             }
         }
-
-        // Insert image paths into the database
-        if (!imagePaths.isEmpty()) {
-            String imagePathsString = String.join(",", imagePaths);
-
-            String sql = "INSERT INTO images (t_id, image_path) VALUES (?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, tourId);
-                stmt.setString(2, imagePathsString);
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                response.getWriter().println("Database Error: " + e.getMessage());
-            }
-        }
-
-//        response.getWriter().println("Files uploaded successfully!");
     }
+
     
 }
+
+
+
+
+//for multiple images
+//private void uploadImages(HttpServletRequest request, HttpServletResponse response, int tourId, Connection conn) throws ServletException, IOException {
+//  
+//  String UPLOAD_DIR = ".\\tour_uploads";
+//  String uploadPath = System.getProperty("user.dir") + File.separator + UPLOAD_DIR;
+//
+//  // Create directory if it doesn't exist
+//  File uploadDir = new File(uploadPath);
+//  if (!uploadDir.exists()) {
+//      uploadDir.mkdirs();
+//  }
+//
+//  Collection<Part> fileParts;
+//  try {
+//      fileParts = request.getParts(); // Get all uploaded files
+//  } catch (IllegalStateException e) {
+//      response.getWriter().println("Error retrieving files: " + e.getMessage());
+//      return;
+//  }
+//
+//  for (Part filePart : fileParts) {
+//      if ("images".equals(filePart.getName()) && filePart.getSize() > 0) {
+//          String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+//          String filePath = UPLOAD_DIR + File.separator + fileName; // Relative path
+//
+//          // Save file to server
+//          File file = new File(uploadPath, fileName);
+//          try (InputStream inputStream = filePart.getInputStream();
+//               OutputStream outputStream = Files.newOutputStream(file.toPath())) {
+//              byte[] buffer = new byte[1024];
+//              int bytesRead;
+//              while ((bytesRead = inputStream.read(buffer)) != -1) {
+//                  outputStream.write(buffer, 0, bytesRead);
+//              }
+//          }
+//
+//          // Insert image path into the database
+//          String sql = "INSERT INTO images (t_id, image_path) VALUES (?, ?)";
+//          try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+//              stmt.setInt(1, tourId);
+//              stmt.setString(2, filePath);
+//              stmt.executeUpdate();
+//          } catch (SQLException e) {
+//              e.printStackTrace();
+//              response.getWriter().println("Database Error: " + e.getMessage());
+//          }
+//      }
+//  }
+//
+//  //response.getWriter().println("Files uploaded successfully!");
+//}
+
+
+
+
+
+//for multiple images
+//private void uploadImages(HttpServletRequest request, HttpServletResponse response, int tourId, Connection conn) throws ServletException, IOException {
+//   
+//	String UPLOAD_DIR = ".\\tour_uploads";
+//	String uploadPath = System.getProperty("user.dir") + File.separator + UPLOAD_DIR;
+//
+//   // Create directory if it doesn't exist
+//   File uploadDir = new File(uploadPath);
+//   if (!uploadDir.exists()) {
+//       uploadDir.mkdirs();
+//   }
+//
+//   Collection<Part> fileParts;
+//   try {
+//       fileParts = request.getParts(); // Get all uploaded files
+//   } catch (IllegalStateException e) {
+//       response.getWriter().println("Error retrieving files: " + e.getMessage());
+//       return;
+//   }
+//
+//   List<String> imagePaths = new ArrayList<>(); // List to store image paths
+//
+//   for (Part filePart : fileParts) {
+//       if ("images".equals(filePart.getName()) && filePart.getSize() > 0) {
+//           String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+//           String filePath = UPLOAD_DIR + File.separator + fileName; // Relative path
+//
+//           // Save file to server
+//           File file = new File(uploadPath, fileName);
+//           try (InputStream inputStream = filePart.getInputStream();
+//                OutputStream outputStream = Files.newOutputStream(file.toPath())) {
+//               byte[] buffer = new byte[1024];
+//               int bytesRead;
+//               while ((bytesRead = inputStream.read(buffer)) != -1) {
+//                   outputStream.write(buffer, 0, bytesRead);
+//               }
+//           }
+//
+//           // Add relative file path to list
+//           imagePaths.add(filePath);
+//       }
+//   }
+//
+//   // Insert image paths into the database
+//   if (!imagePaths.isEmpty()) {
+//       String imagePathsString = String.join(",", imagePaths);
+//
+//       String sql = "INSERT INTO images (t_id, image_path) VALUES (?, ?)";
+//       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+//           stmt.setInt(1, tourId);
+//           stmt.setString(2, imagePathsString);
+//           stmt.executeUpdate();
+//       } catch (SQLException e) {
+//           e.printStackTrace();
+//           response.getWriter().println("Database Error: " + e.getMessage());
+//       }
+//   }
+//
+////   response.getWriter().println("Files uploaded successfully!");
+//}

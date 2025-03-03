@@ -45,7 +45,7 @@ public class LoginRegister extends HttpServlet {
                 
                 session.setAttribute("uid", rs.getInt("user_id")); 
                 session.setAttribute("user", rs.getString("firstname"));             
-                response.sendRedirect("./user/index.jsp");  //redirect to anotjer page
+                response.sendRedirect("./user/index.jsp");  //redirect to another page
 
                 //request.getRequestDispatcher(request.getContextPath() + "/welcome.jsp?success=true").forward(request, response);
                 //request.getRequestDispatcher("/user/loginRegister.jsp?success=true").forward(request, response);

@@ -126,6 +126,121 @@
             </div>
         </div>
     </div>
+    
+    
+    <%-- First get category ID of current tour --%>
+<%
+int currentTourId = Integer.parseInt(request.getParameter("id"));
+int currentCatId = 0;
+String currentCatName = "";
+
+// Get category information from joined tables
+String categoryQuery = "SELECT c.cat_id, c.cat_name " +
+                       "FROM tour t " +
+                       "JOIN category c ON t.cat_id = c.cat_id " +
+                       "WHERE t.t_id = ?";
+
+try (Connection conn = DBConnection.getConnection();
+     PreparedStatement pstmt = conn.prepareStatement(categoryQuery)) {
+    
+    pstmt.setInt(1, currentTourId);
+    try (ResultSet rs = pstmt.executeQuery()) {
+        if (rs.next()) {
+            currentCatId = rs.getInt("cat_id");
+            currentCatName = rs.getString("cat_name");
+        }
+    }
+} catch (SQLException e) {
+    e.printStackTrace(); 
+}
+%>
+
+<%-- Get related tours with first image --%>
+<%
+String relatedToursQuery = "SELECT t.t_id, t.title, t.dest, t.price, t.duration, " +
+                           "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS main_image " +
+                           "FROM tour t " +
+                           "WHERE t.cat_id = ? AND t.t_id != ? " +
+                           "ORDER BY t.s_date DESC " +
+                           "LIMIT 4";
+
+List<Map<String, Object>> relatedTours = new ArrayList<>();
+
+try (Connection conn = DBConnection.getConnection();
+     PreparedStatement pstmt = conn.prepareStatement(relatedToursQuery)) {
+    
+    pstmt.setInt(1, currentCatId);
+    pstmt.setInt(2, currentTourId);
+    
+    try (ResultSet rs = pstmt.executeQuery()) {
+        while (rs.next()) {
+            Map<String, Object> tour = new HashMap<>();
+            tour.put("t_id", rs.getInt("t_id"));
+            tour.put("title", rs.getString("title"));
+            tour.put("dest", rs.getString("dest"));
+            tour.put("price", rs.getInt("price"));
+            tour.put("duration", rs.getString("duration"));
+            
+            String imagePath = rs.getString("main_image");
+            if (imagePath != null) {
+                imagePath = request.getContextPath() + "/" + imagePath.replace("\\", "/");
+            } else {
+                imagePath = request.getContextPath() + "/images/default-tour.jpg";
+            }
+            tour.put("image", imagePath);
+            
+            relatedTours.add(tour);
+        }
+    }
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+%>
+
+<!-- Display Section -->
+<div class="related-tours mt-12">
+    <h3 class="text-2xl font-bold mb-6">More <%= currentCatName %> Packages</h3>
+    
+    <% if (!relatedTours.isEmpty()) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <% for (Map<String, Object> tour : relatedTours) { %>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <img src="<%= tour.get("image") %>" 
+                         alt="<%= tour.get("title") %>" 
+                         class="w-full h-48 object-cover">
+                    
+                    <div class="p-4">
+                        <h4 class="text-lg font-semibold mb-2"><%= tour.get("title") %></h4>
+                        <div class="flex items-center text-sm text-gray-600 mb-2">
+                            <span class="mr-2">📍 <%= tour.get("dest") %></span>
+                            <span>⏳ <%= tour.get("duration") %></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-bold text-blue-600">
+                                ₹<%= NumberFormat.getNumberInstance(Locale.US).format(tour.get("price")) %>
+                            </span>
+                            <a href="viewTourDetails.jsp?id=<%= tour.get("t_id") %>" 
+                               class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="text-center py-8 bg-gray-50 rounded-lg">
+            <p class="text-gray-500">No other packages found in <%= currentCatName %> category</p>
+        </div>
+    <% } %>
+</div>
+        
+        
+        
+        
+        
+        
+        
 
     <script>
         function changeImage(src) {

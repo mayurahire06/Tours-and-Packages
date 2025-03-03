@@ -15,6 +15,16 @@
     <!-- sidebar -->
    	<link href="./css/sidebar.css" rel="stylesheet" />
 </head>
+
+<%
+    // User authentication check
+    HttpSession session1 = request.getSession(false);
+    if (session1 == null || session1.getAttribute("adminEmail") == null) {
+        response.sendRedirect(request.getContextPath() + "/admin/login.jsp");
+        return;
+    }
+%>
+
 <body>
 <%@include file="./includes/header.jsp"%>
 

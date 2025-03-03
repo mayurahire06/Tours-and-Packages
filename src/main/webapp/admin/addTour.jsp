@@ -12,6 +12,15 @@
     <!-- Font Awesome CDN for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
 </head>
+<%
+    // User authentication check
+    HttpSession session1 = request.getSession(false);
+    if (session1 == null || session1.getAttribute("adminEmail") == null) {
+        response.sendRedirect(request.getContextPath() + "/admin/login.jsp");
+        return;
+    }
+%>
+
 <body>
 
 <%@include file="./includes/header.jsp" %>
