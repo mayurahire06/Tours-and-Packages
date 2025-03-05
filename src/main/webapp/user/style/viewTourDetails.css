@@ -1,0 +1,22 @@
+@charset "UTF-8";
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  	-webkit-appearance: none;
+ 		 margin: 0;
+}
+
+/* Hide number input arrows in Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+select option:disabled {
+    color: #6b7280; /* Gray color for placeholder */
+    font-style: italic;
+}
+
+select option {
+    color: #1f2937; /* Dark gray for normal options */
+}
+

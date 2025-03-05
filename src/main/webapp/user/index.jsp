@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="com.mh.DBConnection" %>
+<%@ page import="java.text.NumberFormat, java.util.Locale" %>
 
 <!DOCTYPE html>
 <html>
@@ -30,7 +31,7 @@
 <!-- Header Section -->
 <header class="bg-primary text-white text-center py-5">
     <h1>Welcome to Our Tours and Travels</h1>
-    <p>Your dream vacation is just a click away!</p>
+    <p>Your dream vacation is just a click away!</p>    
 </header>
 
 <!-- Tour Packages Section -->
@@ -44,7 +45,7 @@
     try {
         conn = DBConnection.getConnection();
         // Fetch the first image for each tour
-        String query = "SELECT t.t_id, t.title, t.descr, " +
+        String query = "SELECT t.t_id, t.price, t.title, t.descr, " +
                        "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS image_path " +
                        "FROM tour t";
         pstmt = conn.prepareStatement(query);
@@ -59,17 +60,27 @@
                 // Fix the image path for the browser
                 imageUrl = request.getContextPath() + "/" + imagePath.replace("\\", "/").replace("./", "");
             }
+            
+            
+            int price = rs.getInt("price");
+            NumberFormat formatter = NumberFormat.getNumberInstance(new Locale("en", "IN"));
+            String formattedPrice = formatter.format(price);
+        
 %>
             <div class="col-md-4 mb-4">
-                <div class="card package-card">
-                    <img src="<%= imageUrl %>" class="card-img-top" alt="Package Image">
-                    <div class="card-body">
-                        <h5 class="card-title"><%= rs.getString("title") %></h5>
-                        <p class="card-text"><%= rs.getString("descr") %></p>
-                        <a href="viewTourDetails.jsp?id=<%= rs.getInt("t_id") %>" class="btn btn-primary">View Package</a>
-                    </div>
-                </div>
+    <div class="card package-card">
+        <img src="<%= imageUrl %>" class="card-img-top" alt="Package Image">
+        <div class="card-body">
+            <h5 class="card-title"><%= rs.getString("title") %></h5>
+            <p class="card-text"><%= rs.getString("descr") %></p>
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="./viewTourDetails.jsp?id=<%= rs.getInt("t_id") %>" class="btn btn-primary">View Package</a>
+                <p class="mb-0 fw-bold decoration-orange-800 ">from ₹<%= formattedPrice %></p>
             </div>
+        </div>
+    </div>
+</div>
+
 <%
         }
     } catch (Exception e) {
