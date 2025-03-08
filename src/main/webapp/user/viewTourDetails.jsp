@@ -4,7 +4,9 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
-
+<%-- Add this at the top of your JSP --%>
+<%@ page import="java.nio.file.Files" %>
+<%@ page import="java.nio.file.Paths" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tour Package Details</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./user/style/viewTourDetails.css">
+    <link rel="stylesheet" href="./style/viewTourDetails.css">
 </head>
 
 <%
@@ -45,7 +47,7 @@
 
     try (Connection conn = DBConnection.getConnection()) {
         // Fetch main tour details
-        String tourQuery = "SELECT t.s_date, t.price, t.dest, t.capacity, t.transport, i.image_path " +
+        String tourQuery = "SELECT t.s_date, t.price, t.dest, t.capacity, t.transport, i.image_path, t.itinerary " +
                          "FROM tour t LEFT JOIN images i ON t.t_id = i.t_id WHERE t.t_id = ?";
         
         try (PreparedStatement tourStmt = conn.prepareStatement(tourQuery)) {
@@ -64,6 +66,11 @@
                 // Collect images
                 String imagePath = tourRs.getString("image_path");
                 if (imagePath != null && !imagePath.trim().isEmpty()) {
+                    images.add(request.getContextPath() + "/" + imagePath.replace("\\", "/"));
+                }
+                
+                String itinararyPath = tourRs.getString("itinerary");
+                if (itinararyPath != null && !itinararyPath.trim().isEmpty()) {
                     images.add(request.getContextPath() + "/" + imagePath.replace("\\", "/"));
                 }
             }
@@ -141,6 +148,7 @@
             </div>
 
             <!-- Tour Information Section -->
+
             <div class="w-[350px] flex flex-col items-center pl-2 mt-4 border-2 border-gray-300 rounded-lg p-4 hover:bg-gray-100 transition duration-300">
                 <p class="text-gray-600 mb-4"><%= dest %>, USA</p>
                 
@@ -154,28 +162,27 @@
                     <input type="date" id="date" name="date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md hover:border-blue-500 transition duration-300" 
                            value="<%= s_date %>" disabled>
                 </div>
+            
+                <!-- Update your travelers input section to show selected count -->
+				<div class="mb-6 w-full">
+				    <label class="block text-sm font-medium text-gray-700">Travelers</label>
+				    <div class="mt-2 flex items-center justify-between border border-gray-300 rounded-md p-3">
+				        <span class="text-gray-700" id="travelerDisplay">1 traveler</span>
+				        <button type="button" onclick="showModal()" 
+				                class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+				            Change
+				        </button>
+				    </div>
+				    <input type="hidden" id="travelers" name="members" value="1">
+				</div>
 
-                <div class="mb-6 w-full">
-                    <label class="block text-sm font-medium text-gray-700">Travelers</label>
-                    <div class="mt-2 flex items-center justify-between border border-gray-300 rounded-md">
-                        <button type="button" onclick="adjustTravelers(-1)" class="px-3 py-2 bg-gray-300 text-gray-700 rounded-l-md hover:bg-red-500 transition-colors">
-                            -
-                        </button>
-                        <input type="number" id="travelers" name="members" 
-                               class="w-full text-center p-2 focus:outline-none" 
-                               value="1" min="1" max="<%= capacity %>" readonly>
-                        <button type="button" onclick="adjustTravelers(1)" class="px-3 py-2 bg-gray-300 text-gray-700 rounded-r-md hover:bg-yellow-600 transition-colors">
-                            +
-                        </button>
-                    </div>
-                </div>
 
                 <!-- In the Transportation Options section -->
 				<div class="mb-6 w-full">
 				    <p class="text-lg font-semibold mb-2">Transportation Options</p>
 				    <select id="transportSelect" onchange="updateTotalPrice()" class="border rounded px-3 py-2 text-sm text-gray-600 w-full">
 				        <!-- Default placeholder with proper attributes -->
-				        <option value="none" data-price="0" disabled selected>Select Transportation</option>
+				        <option value="none" data-price="0" selected>Select Transportation</option>
 				        
 				        <% for (String transport1 : transportOptions) { 
 				            Integer price = transportPrices.get(transport1);
@@ -192,31 +199,86 @@
 				        <% } %>
 				    </select>
 				</div>
+			
 
-
-
-		<!-- Single-line price breakdown -->
-		<div class="text-sm text-gray-600 mt-2" id="priceNote">
-		    <div class="flex gap-2">
-		        <span>Base Price: ₹<%= formattedBasePrice %></span>
-		        <span class="hidden" id="transportPriceNote">+ Transportation: ₹<span id="transportPrice">0</span></span>
-		    </div>
-		</div>
+				<!-- Single-line price breakdown -->
+				<div class="text-sm text-gray-600 mt-2" id="priceNote">
+				    <div class="flex gap-2">
+				        <span>Base Price: ₹<%= formattedBasePrice %></span>
+				        <span class="hidden" id="transportPriceNote">+ Transportation: ₹<span id="transportPrice">0</span></span>
+				    </div>
+				</div>
 
                 <div class="mb-6 w-full mt-2">
                     <p class="text-xl font-semibold">Total Price: ₹<span id="totalPrice"><%= formattedBasePrice %></span></p>
                 </div>
-
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full transition duration-300">
-                    Book Now
-                </button>
-
+                
+                <input type="hidden" name="id" value="<%= id %>" >
+                
+				<button type="button" onclick="addDetails()" id="addDetailsButton"
+				        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full transition duration-300">
+				    Add Details
+				</button>
+				
+			
                 <div class="mt-4 text-sm text-gray-600">
                     <p>Free cancellation up to 24 hours before experience start</p>
                 </div>
             </div>
+           
         </div>
     </div>
+    
+
+<!-- Add this where you want the itinerary to appear -->
+<div class="itinerary-section mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+    <h2 class="text-2xl font-bold mb-4">Tour Itinerary</h2>
+    <div class="itinerary-content bg-white p-4 rounded-md">
+        <% 
+        String itineraryContent = "";
+        String filePath = "";
+        String fileName = "";
+        try (Connection conn = DBConnection.getConnection()) {
+            String itineraryQuery = "SELECT itinerary FROM tour WHERE t_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(itineraryQuery)) {
+                pstmt.setInt(1, id);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    filePath = rs.getString("itinerary");
+                    
+                    // Extract only the filename
+                    if (filePath != null && !filePath.trim().isEmpty()) {
+                        // Handle both forward and backslashes
+                        String normalizedPath = filePath.replace("\\", "/");
+                        fileName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
+                    }
+                }
+            }
+            
+            if (fileName != null && !fileName.isEmpty()) {
+                if (Files.exists(Paths.get(filePath))) {
+        %>
+                    <a href="../DownloadServlet?filename=<%= java.net.URLEncoder.encode(fileName, "UTF-8") %>" 
+                       class="inline-block mb-4 text-blue-600 hover:text-blue-800">
+                       <i class="fas fa-download mr-2"></i>Download <%= fileName %>
+                    </a>
+        <%
+                    itineraryContent = new String(Files.readAllBytes(Paths.get(filePath)));
+                } else {
+                    itineraryContent = "File not found: " + fileName;
+                }
+            } else {
+                itineraryContent = "No itinerary available for this tour.";
+            }
+        } catch (Exception e) {
+            itineraryContent = "Unable to load itinerary at this time.";
+            e.printStackTrace();
+        }
+        %>
+        <pre class="whitespace-pre-wrap font-sans"><%= itineraryContent %></pre>
+    </div>
+</div>
+
 	
 	    
     <%-- First get category ID of current tour --%>
@@ -340,6 +402,73 @@ try (Connection conn = DBConnection.getConnection();
 </div>
         
         
+        
+        <!-- Add this modal HTML before the closing </body> tag -->
+<div id="travelerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Select Number of Travelers</h3>
+            <div class="mt-2 px-7 py-3">
+                <div class="flex items-center justify-center gap-4">
+                    <button type="button" onclick="adjustModalTravelers(-1)" 
+                            class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">
+                        -
+                    </button>
+                    <input type="number" id="modalTravelers" min="1" max="<%= capacity %>" 
+                           class="w-20 text-center border rounded-md text-lg" value="1" readonly>
+                    <button type="button" onclick="adjustModalTravelers(1)" 
+                            class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">
+                        +
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Maximum <%= capacity %> travelers allowed</p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button onclick="confirmTravelers()" 
+                        class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                    Confirm
+                </button>
+                <button onclick="closeModal()" 
+                        class="ml-3 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this modal for traveler details -->
+<div id="travelerDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-2xl leading-6 font-medium text-gray-900 mb-4">Traveler Details</h3>
+            <div class="mt-2 px-7 py-3">
+                <div id="travelerFields" class="space-y-6"></div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button onclick="submitTravelerDetails()" 
+                        class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                    Submit Details
+                </button>
+                <button onclick="closeTravelerDetailsModal()" 
+                        class="ml-3 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add hidden form for submission -->
+<form id="bookingForm" method="post" action="BookingServlet" class="hidden">
+    <input type="hidden" name="tourId" value="<%= id %>">
+    <input type="hidden" name="members" id="formMembers">
+    <input type="hidden" name="transportType" id="formTransportType">
+    <input type="hidden" name="totalPrice" id="formTotalPrice">
+    <input type="hidden" name="travelerDetails" id="formTravelerDetails">
+</form>
+
+        
     <script>
     <!-- In the JavaScript section -->
         function updateTotalPrice() {
@@ -381,6 +510,122 @@ try (Connection conn = DBConnection.getConnection();
 
         // Initialize price calculation
         updateTotalPrice();
+        
+        
     </script>
+    
+    <script>
+// Add these functions to your existing script
+function showModal() {
+    document.getElementById('travelerModal').classList.remove('hidden');
+    document.getElementById('modalTravelers').value = document.getElementById('travelers').value;
+}
+
+function closeModal() {
+    document.getElementById('travelerModal').classList.add('hidden');
+}
+
+function adjustModalTravelers(change) {
+    const input = document.getElementById('modalTravelers');
+    let value = parseInt(input.value) + change;
+    value = Math.max(1, Math.min(value, <%= capacity %>));
+    input.value = value;
+}
+
+function confirmTravelers() {
+    const newValue = document.getElementById('modalTravelers').value;
+    console.log(newValue);
+    document.getElementById('travelers').value = newValue;
+    document.getElementById('travelerDisplay').textContent = newValue + " traveler";
+    
+    updateTotalPrice();
+    closeModal();
+    
+    // Submit the form
+    //document.querySelector('form').submit();
+}
+</script>
+
+<script>
+// Update the addDetails function
+function addDetails() {
+    const transportSelect = document.getElementById('transportSelect');
+    //if (transportSelect.value === 'none') {
+       // alert('Please select a transportation option before proceeding.');
+       //return;
+   // }
+    showTravelerDetailsModal();
+}
+
+function showTravelerDetailsModal() {
+    const modal = document.getElementById('travelerDetailsModal');
+    const travelerFields = document.getElementById('travelerFields');
+    travelerFields.innerHTML = '';
+    
+    const travelerCount = parseInt(document.getElementById('travelers').value);
+    
+    for(let i = 1; i <= travelerCount; i++) {
+        travelerFields.innerHTML += `<div class="traveler-group bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-lg font-semibold mb-3">Traveler ${i} </h4>
+                <div class="space-y-3">
+                    <input type="text" required 
+                           class="w-full p-2 border rounded-md traveler-name" 
+                           placeholder="Full Name">
+                    <input type="number" required min="1" max="100"
+                           class="w-full p-2 border rounded-md traveler-age" 
+                           placeholder="Age">
+                    <select class="w-full p-2 border rounded-md traveler-gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                </div>
+            </div>`;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeTravelerDetailsModal() {
+    document.getElementById('travelerDetailsModal').classList.add('hidden');
+}
+
+function submitTravelerDetails() {
+    const travelers = [];
+    const names = document.querySelectorAll('.traveler-name');
+    const ages = document.querySelectorAll('.traveler-age');
+    const genders = document.querySelectorAll('.traveler-gender');
+
+    // Validate all fields
+    for(let i = 0; i < names.length; i++) {
+        if(!names[i].value || !ages[i].value || !genders[i].value) {
+            alert('Please fill all fields for Traveler ' + (i+1));
+            return;
+        }
+        if(ages[i].value < 1 || ages[i].value > 120) {
+            alert('Please enter a valid age (1-120) for Traveler ' + (i+1));
+            return;
+        }
+        
+        travelers.push({
+            name: names[i].value,
+            age: ages[i].value,
+            gender: genders[i].value
+        });
+    }
+
+    // Set form values
+    document.getElementById('formMembers').value = document.getElementById('travelers').value;
+    document.getElementById('formTransportType').value = document.getElementById('transportSelect').value;
+    document.getElementById('formTotalPrice').value = document.getElementById('totalPrice').textContent.replace(/,/g, '');
+    document.getElementById('formTravelerDetails').value = JSON.stringify(travelers);
+
+    // Submit the form
+    //document.getElementById('bookingForm').submit();
+}
+</script>
+    
+    
 </body>
 </html>

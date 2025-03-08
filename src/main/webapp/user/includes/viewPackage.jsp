@@ -9,6 +9,27 @@
     <!-- Font Awesome CDN for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
     <style>
+    
+    
+    
+    <form action="<%= request.getContextPath() %>../DownloadItineraryServlet" method="GET">
+				    <input type="hidden" name="tourId" value="<%= id %>">
+				    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full transition duration-300">
+				        Download Itinerary (PDF)
+				    </button>
+				</form>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
         .package-container { max-width: 1140px; }
         .carousel-item img { height: 450px; object-fit: cover; }
         .booking-card { border-radius: 1rem; overflow: hidden; }

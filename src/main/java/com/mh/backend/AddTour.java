@@ -96,9 +96,75 @@ public class AddTour extends HttpServlet {
         	String destination = request.getParameter("destination");
         	String transportation[] = request.getParameterValues("transportation");
         	int pdprice = Integer.parseInt(request.getParameter("pdprice"));
-//        	String image = request.getParameter("image");
-        	
-        	//Hotel Details
+        	Part filePart = request.getPart("itinerary");
+
+            if (filePart == null || filePart.getSize() == 0) {
+                System.out.println("No file received!");
+                response.getWriter().write("No file uploaded.");
+                return;
+            }
+            
+            
+            String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+            String UPLOAD_DIR = "C:/uploads"; // Use an absolute directory path
+            File uploadDir = new File(UPLOAD_DIR);
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+
+            String filePath = UPLOAD_DIR + File.separator + fileName;
+            filePart.write(filePath);
+
+            System.out.println("File uploaded to: " + filePath);
+
+            // Redirect to the list page
+            //response.sendRedirect(request.getContextPath() + "/client/listItinerary.jsp");
+            
+            ///////////////////////
+
+
+          //for single image
+//            private String singleImage(Part img, String uploadDir) throws IOException {
+//                
+//                // Ensure the part is not null and contains a file
+//                if (img == null || img.getSize() <= 0) {
+//                    throw new IOException("No image file uploaded.");
+//                }
+//
+//                // Get file name
+//                String imageFileName = Paths.get(img.getSubmittedFileName()).getFileName().toString();
+//
+//                // Create directory if it does not exist
+//                File dir = new File(uploadDir);
+//                if (!dir.exists()) {
+//                    dir.mkdirs();
+//                }
+//
+//                // Define file path
+//                String imagePath = uploadDir + File.separator + imageFileName;
+//
+//                // Save file
+//                try (InputStream inputStream = img.getInputStream();
+//                     OutputStream outputStream = Files.newOutputStream(Paths.get(imagePath))) {
+//                    byte[] buffer = new byte[1024];
+//                    int bytesRead;
+//                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+//                        outputStream.write(buffer, 0, bytesRead);
+//                    }
+//                }
+//                return imagePath;
+//            }
+            ///
+            
+            //
+            //
+            
+            
+            
+            
+            
+            
+            
+            
+            
         	String hotelName = request.getParameter("hotelName");
         	String hotelLocation = request.getParameter("hotelLocation");
         	
@@ -162,7 +228,7 @@ public class AddTour extends HttpServlet {
         	
             // Database insertion
             	conn = DBConnection.getConnection();
-            	String sql1 = "INSERT INTO tour (cat_id, title, descr, price, s_date, e_date, duration, capacity, dest, transport, pdprice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            	String sql1 = "INSERT INTO tour (cat_id, title, descr, price, s_date, e_date, duration, capacity, dest, transport, pdprice, itinerary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             	stmt1 = conn.prepareStatement(sql1, PreparedStatement.RETURN_GENERATED_KEYS);
                 stmt1.setInt(1, catId);
                 stmt1.setString(2, title);
@@ -175,7 +241,7 @@ public class AddTour extends HttpServlet {
                 stmt1.setString(9, destination);
                 stmt1.setString(10, transportString);
                 stmt1.setInt(11, pdprice);
-//                stmt1.setString(12, imageFileName);
+                stmt1.setString(12, filePath);
 //                stmt1.setString(12, imagePath);
                 
                 rowsInserted1 = stmt1.executeUpdate();

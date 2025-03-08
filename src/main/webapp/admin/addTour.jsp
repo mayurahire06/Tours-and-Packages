@@ -31,7 +31,7 @@
             <h4><i class="fas fa-plus-circle me-2"></i>Add New Tour</h4>
         </div>
         <div class="card-body">
-            <form action="../AddTour" method="post" enctype="multipart/form-data"> <!-- enctype="multipart/form-data" -->
+            <form action="../AddTour" method="post" enctype="multipart/form-data">
                 <div class="row">
                     <!-- Left Column -->
                     <div class="col-md-6">
@@ -75,7 +75,13 @@
                         <div class="mb-3">
                             <label for="destination" class="form-label">Destination <span class="text-danger">*</span></label>
                             <input class="form-control" id="destination" name="destination" required>
-                        </div>          
+                        </div>        
+                        
+                        <!-- Add Itinerary -->
+                        <div class="mb-3">
+                            <label for="itinerary" class="form-label">Add Itinerary <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="itinerary" name="itinerary" required>
+                        </div>   
 
                         <!-- Transportation Options -->
                         <div class="mb-3">
