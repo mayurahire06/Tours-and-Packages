@@ -14,7 +14,152 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tour Package Details</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./style/viewTourDetails.css">
+    <style>
+        /* Custom styles to enhance the UI */
+        :root {
+            --primary-color: #e05d37;
+            --primary-hover: #d04d27;
+            --light-bg: #f9fafb;
+            --border-color: #e5e7eb;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .container-custom {
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+            transition: background-color 0.2s;
+        }
+        
+        .primary-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .secondary-btn {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        .secondary-btn:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        .thumbnail-active {
+            border: 2px solid var(--primary-color);
+        }
+        
+        .itinerary-day {
+            border-left: 4px solid rgba(224, 93, 55, 0.3);
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .itinerary-activity {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .activity-bullet {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(224, 93, 55, 0.2);
+            margin-top: 0.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        /* Fixed heights for main containers */
+        .main-container {
+            height: 500px;
+        }
+        
+        .thumbnails-container {
+            width: 100%;
+            height: 500px;
+            overflow-y: auto;
+        }
+        
+        .main-image-container {
+            width: 100%;
+            height: 500px;
+            flex: 1;
+        }
+        
+        .info-container {
+            width: 100%;
+            height: 500px;
+            overflow-y: auto;
+        }
+        
+        @media (min-width: 768px) {
+            .thumbnails-container {
+                width: 13rem;
+                flex-shrink: 0;
+            }
+            
+            .info-container {
+                width: 20rem;
+                flex-shrink: 0;
+            }
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Changed from flex to none to ensure modals are hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        
+        /* When modal is visible */
+        .modal.visible {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* Hide scrollbar but allow scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
 
 <%
@@ -29,10 +174,12 @@
     String firstImage = request.getContextPath() + "/images/1.jpeg";
     List<String> images = new ArrayList<>();
     int basePrice = 0, capacity = 0;
-    String s_date = "", dest = "", transport = "";
+    String s_date = "", dest = "", transport = "", title = "";
     Map<String, Integer> transportPrices = new HashMap<>();
     List<String> transportOptions = new ArrayList<>();
     NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
+    String itineraryContent = "";
+    String fileName = "";
 
     // Get tour ID from request
     int id = 0;
@@ -47,7 +194,7 @@
 
     try (Connection conn = DBConnection.getConnection()) {
         // Fetch main tour details
-        String tourQuery = "SELECT t.s_date, t.price, t.dest, t.capacity, t.transport, i.image_path, t.itinerary " +
+        String tourQuery = "SELECT t.s_date, t.price, t.dest, t.capacity, t.transport, t.title, i.image_path, t.itinerary " +
                          "FROM tour t LEFT JOIN images i ON t.t_id = i.t_id WHERE t.t_id = ?";
         
         try (PreparedStatement tourStmt = conn.prepareStatement(tourQuery)) {
@@ -61,16 +208,15 @@
                     capacity = tourRs.getInt("capacity");
                     dest = tourRs.getString("dest");
                     transport = tourRs.getString("transport");
+                    title = tourRs.getString("title");
+                    if (title == null || title.isEmpty()) {
+                        title = "Denali Experience Tour from Talkeetna"; // Default title if not available
+                    }
                 }
 
                 // Collect images
                 String imagePath = tourRs.getString("image_path");
                 if (imagePath != null && !imagePath.trim().isEmpty()) {
-                    images.add(request.getContextPath() + "/" + imagePath.replace("\\", "/"));
-                }
-                
-                String itinararyPath = tourRs.getString("itinerary");
-                if (itinararyPath != null && !itinararyPath.trim().isEmpty()) {
                     images.add(request.getContextPath() + "/" + imagePath.replace("\\", "/"));
                 }
             }
@@ -112,6 +258,34 @@
         if (!images.isEmpty()) {
             firstImage = images.get(0);
         }
+        
+        // Get itinerary content
+        String itineraryQuery = "SELECT itinerary FROM tour WHERE t_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(itineraryQuery)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                String filePath = rs.getString("itinerary");
+                
+                // Extract only the filename
+                if (filePath != null && !filePath.trim().isEmpty()) {
+                    // Handle both forward and backslashes
+                    String normalizedPath = filePath.replace("\\", "/");
+                    fileName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
+                    
+                    if (Files.exists(Paths.get(filePath))) {
+                        itineraryContent = new String(Files.readAllBytes(Paths.get(filePath)));
+                    } else {
+                        itineraryContent = "File not found: " + fileName;
+                    }
+                } else {
+                    itineraryContent = "No itinerary available for this tour.";
+                }
+            }
+        } catch (Exception e) {
+            itineraryContent = "Unable to load itinerary at this time.";
+            e.printStackTrace();
+        }
 
     } catch (SQLException | ClassNotFoundException e) {
         e.printStackTrace();
@@ -122,355 +296,391 @@
     String formattedBasePrice = nf.format(basePrice);
 %>
 
-<body class="m-2 p-6">
-    <div class="container max-w-[1440px] bg-white shadow-lg rounded-lg pt-4 border-2 border-gray-300">
-        <h1 class="text-4xl font-serif font-bold m-2">Denali Experience Tour from Talkeetna</h1>
-        <div class="flex gap-4 mr-4 h-[600px] mb-4">
+<body class="py-8">
+    <div class="container-custom">
+        <!-- Main Tour Card -->
+        <div class="card mb-10">
+            <!-- Tour Title -->
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800"><%= title %></h1>
+                <p class="text-gray-600 mt-2 flex items-center">
+                    <span class="inline-block mr-2">📍</span> <%= dest %>, USA
+                </p>
+            </div>
 
-            <!-- Image Thumbnails -->
-            <div class="w-md flex flex-col items-center pl-4 mt-4">
-                <div class="overflow-y-auto flex flex-col space-y-4 pt-2 rounded-lg h-[600px] w-52 border-2 border-gray-300">
-                    <% if (!images.isEmpty()) { %>
-                        <% for (String img : images) { %>
-                            <img src="<%= img %>" 
-                                 class="h-28 w-full cursor-pointer border rounded-md object-cover hover:shadow-lg hover:border-blue-500 transition duration-300" 
-                                 onclick="changeImage('<%= img %>')" />
+            <!-- Main Content Area with Fixed Heights -->
+            <div class="flex flex-col md:flex-row p-6 gap-6">
+                <!-- Image Thumbnails - Fixed Width -->
+                <div class="thumbnails-container border border-gray-200 rounded-lg p-2 bg-gray-50">
+                    <div class="grid gap-3">
+                        <% if (!images.isEmpty()) { %>
+                            <% for (String img : images) { %>
+                                <div class="cursor-pointer transition-all duration-300" onclick="changeImage('<%= img %>')" id="thumb-<%= images.indexOf(img) %>">
+                                    <img src="<%= img %>" 
+                                         alt="Tour image <%= images.indexOf(img) + 1 %>" 
+                                         class="h-28 w-full object-cover rounded-md">
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <p class="text-gray-500 text-sm text-center mt-4">No images available.</p>
                         <% } %>
-                    <% } else { %>
-                        <p class="text-gray-500 text-sm text-center mt-4">No images available.</p>
-                    <% } %>
+                    </div>
+                </div>
+
+                <!-- Main Image - Fixed Width and Height -->
+                <div class="main-image-container border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                    <img id="mainImage" src="<%= firstImage %>" alt="Selected tour view" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Tour Information - Fixed Width -->
+                <div class="info-container border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <div class="space-y-6">
+                        <!-- Price Section -->
+                        <div>
+                            <p class="text-2xl font-bold text-gray-800">₹<span id="basePrice"><%= formattedBasePrice %></span></p>
+                            <p class="text-sm text-[#e05d37] underline">Lowest Price Guarantee</p>
+                        </div>
+
+                        <!-- Date Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tour Date</label>
+                            <input type="date" id="date" name="date" 
+                                   class="w-full p-2 bg-white border border-gray-300 rounded-md text-gray-500" 
+                                   value="<%= s_date %>" disabled>
+                        </div>
+
+                        <!-- Travelers Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Travelers</label>
+                            <div class="flex items-center justify-between border border-gray-300 rounded-md p-3 bg-white">
+                                <span class="text-gray-700" id="travelerDisplay">1 traveler</span>
+                                <button type="button" onclick="showTravelerModal()" 
+                                        class="text-[#e05d37] hover:text-[#d04d27] text-sm font-medium">
+                                    Change
+                                </button>
+                            </div>
+                            <input type="hidden" id="travelers" name="members" value="1">
+                        </div>
+
+                        <!-- Transportation Options -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Transportation</label>
+                            <select id="transportSelect" onchange="updateTotalPrice()" 
+                                    class="w-full p-2 border border-gray-300 rounded-md bg-white">
+                                <option value="none" data-price="0" selected>Select Transportation</option>
+                                <% for (String transportType : transportOptions) { 
+                                    Integer price = transportPrices.get(transportType);
+                                    String displayName = transportType.substring(0, 1).toUpperCase() + transportType.substring(1);
+                                    String displayPrice = (price != null && price > 0) ? nf.format(price) : null;
+                                %>
+                                    <option value="<%= transportType %>" data-price="<%= price != null ? price : 0 %>">
+                                        <% if(displayPrice != null) { %>
+                                            <%= displayName %> (+₹<%= displayPrice %>)
+                                        <% } else { %>
+                                            <%= displayName %>
+                                        <% } %>
+                                    </option>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div class="text-sm text-gray-600 border-t border-gray-200 pt-4">
+                            <div class="flex justify-between mb-1">
+                                <span>Base Price:</span>
+                                <span>₹<%= formattedBasePrice %></span>
+                            </div>
+                            
+                            <div id="transportPriceNote" class="flex justify-between mb-1 hidden">
+                                <span>Transportation:</span>
+                                <span>₹<span id="transportPrice">0</span></span>
+                            </div>
+                            
+                            <div id="travelerMultiplier" class="flex justify-between mb-1 hidden">
+                                <span>Travelers:</span>
+                                <span>× <span id="travelerCount">1</span></span>
+                            </div>
+                            
+                            <div class="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-200">
+                                <span>Total:</span>
+                                <span>₹<span id="totalPrice"><%= formattedBasePrice %></span></span>
+                            </div>
+                        </div>
+
+                        <!-- Book Button -->
+                        <button type="button" onclick="showTravelerDetailsModal()" id="addDetailsButton"
+                                class="w-full py-3 primary-btn rounded-md font-medium">
+                            Add Details
+                        </button>
+
+                        <!-- Cancellation Policy -->
+                        <p class="text-sm text-gray-600">
+                            Free cancellation up to 24 hours before experience start
+                        </p>
+                    </div>
                 </div>
             </div>
-
-            <!-- Main Image Display -->
-            <div class="w-[800px] h-[600px] flex flex-col items-center border-2 border-gray-300 rounded-lg p-2 hover:shadow-lg transition duration-300">
-                <img id="mainImage" src="<%= firstImage %>" class="w-full h-full max-h-[600px] rounded-lg shadow-md object-cover" />
-            </div>
-
-            <!-- Tour Information Section -->
-
-            <div class="w-[350px] flex flex-col items-center pl-2 mt-4 border-2 border-gray-300 rounded-lg p-4 hover:bg-gray-100 transition duration-300">
-                <p class="text-gray-600 mb-4"><%= dest %>, USA</p>
-                
-                <div class="mb-6 w-full">
-                    <p class="text-xl font-semibold">Base Price: ₹<span id="basePrice"><%= formattedBasePrice %></span></p>
-                    <p class="underline underline-offset-1 text-sm text-gray-500">Lowest Price Guarantee</p>
-                </div>
-
-                <div class="mb-6 w-full">
-                    <label for="date" class="block text-sm font-medium text-gray-700">Tour Date</label>
-                    <input type="date" id="date" name="date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md hover:border-blue-500 transition duration-300" 
-                           value="<%= s_date %>" disabled>
-                </div>
-            
-                <!-- Update your travelers input section to show selected count -->
-				<div class="mb-6 w-full">
-				    <label class="block text-sm font-medium text-gray-700">Travelers</label>
-				    <div class="mt-2 flex items-center justify-between border border-gray-300 rounded-md p-3">
-				        <span class="text-gray-700" id="travelerDisplay">1 traveler</span>
-				        <button type="button" onclick="showModal()" 
-				                class="text-blue-500 hover:text-blue-700 text-sm font-medium">
-				            Change
-				        </button>
-				    </div>
-				    <input type="hidden" id="travelers" name="members" value="1">
-				</div>
-
-
-                <!-- In the Transportation Options section -->
-				<div class="mb-6 w-full">
-				    <p class="text-lg font-semibold mb-2">Transportation Options</p>
-				    <select id="transportSelect" onchange="updateTotalPrice()" class="border rounded px-3 py-2 text-sm text-gray-600 w-full">
-				        <!-- Default placeholder with proper attributes -->
-				        <option value="none" data-price="0" selected>Select Transportation</option>
-				        
-				        <% for (String transport1 : transportOptions) { 
-				            Integer price = transportPrices.get(transport1);
-				            String displayName = transport1.substring(0, 1).toUpperCase() + transport1.substring(1);
-				            String displayPrice = (price != null && price > 0) ? nf.format(price) : null;
-				        %>
-				            <option value="<%= transport1 %>" data-price="<%= price != null ? price : 0 %>">
-				                <% if(displayPrice != null) { %>
-				                    <%= displayName %> (+₹<%= displayPrice %>)
-				                <% } else { %>
-				                    <%= displayName %>
-				                <% } %>
-				            </option>
-				        <% } %>
-				    </select>
-				</div>
-			
-
-				<!-- Single-line price breakdown -->
-				<div class="text-sm text-gray-600 mt-2" id="priceNote">
-				    <div class="flex gap-2">
-				        <span>Base Price: ₹<%= formattedBasePrice %></span>
-				        <span class="hidden" id="transportPriceNote">+ Transportation: ₹<span id="transportPrice">0</span></span>
-				    </div>
-				</div>
-
-                <div class="mb-6 w-full mt-2">
-                    <p class="text-xl font-semibold">Total Price: ₹<span id="totalPrice"><%= formattedBasePrice %></span></p>
-                </div>
-                
-                <input type="hidden" name="id" value="<%= id %>" >
-                
-				<button type="button" onclick="addDetails()" id="addDetailsButton"
-				        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full transition duration-300">
-				    Add Details
-				</button>
-				
-			
-                <div class="mt-4 text-sm text-gray-600">
-                    <p>Free cancellation up to 24 hours before experience start</p>
-                </div>
-            </div>
-           
         </div>
-    </div>
-    
 
-<!-- Add this where you want the itinerary to appear -->
-<div class="itinerary-section mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-    <h2 class="text-2xl font-bold mb-4">Tour Itinerary</h2>
-    <div class="itinerary-content bg-white p-4 rounded-md">
-        <% 
-        String itineraryContent = "";
-        String filePath = "";
-        String fileName = "";
-        try (Connection conn = DBConnection.getConnection()) {
-            String itineraryQuery = "SELECT itinerary FROM tour WHERE t_id = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(itineraryQuery)) {
-                pstmt.setInt(1, id);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    filePath = rs.getString("itinerary");
-                    
-                    // Extract only the filename
-                    if (filePath != null && !filePath.trim().isEmpty()) {
-                        // Handle both forward and backslashes
-                        String normalizedPath = filePath.replace("\\", "/");
-                        fileName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
-                    }
-                }
-            }
+        <!-- Itinerary Section - Enhanced -->
+        <div class="card mb-10">
+            <div class="p-6 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-2xl font-bold text-gray-800">Tour Itinerary</h2>
+            </div>
             
-            if (fileName != null && !fileName.isEmpty()) {
-                if (Files.exists(Paths.get(filePath))) {
-        %>
+            <div class="p-6">
+                <% if (fileName != null && !fileName.isEmpty()) { %>
+                    <!-- Download Button -->
                     <a href="../DownloadServlet?filename=<%= java.net.URLEncoder.encode(fileName, "UTF-8") %>" 
-                       class="inline-block mb-4 text-blue-600 hover:text-blue-800">
-                       <i class="fas fa-download mr-2"></i>Download <%= fileName %>
+                       class="inline-flex items-center mb-6 px-4 py-2 bg-[#e05d37]/10 text-[#e05d37] rounded-md hover:bg-[#e05d37]/20 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Itinerary
                     </a>
-        <%
-                    itineraryContent = new String(Files.readAllBytes(Paths.get(filePath)));
-                } else {
-                    itineraryContent = "File not found: " + fileName;
-                }
-            } else {
-                itineraryContent = "No itinerary available for this tour.";
+                <% } %>
+                
+                <!-- Itinerary Content -->
+                <div id="itineraryContent" class="space-y-6">
+    <% 
+    if (itineraryContent != null && !itineraryContent.isEmpty()) {
+        String[] days = itineraryContent.split("\n\n");
+        for (String day : days) {
+            if (day.trim().isEmpty()) continue;
+            
+            String[] lines = day.split("\n");
+            if (lines.length > 0) {
+                String dayTitle = lines[0].trim();
+    %>
+                <div class="itinerary-day mb-8">
+                    <h3 class="text-xl font-bold text-blue-600 mb-3 border-b border-blue-100 pb-2">
+                        <%= dayTitle %>
+                    </h3>
+                    <div class="space-y-3 pl-4">
+                        <% 
+                        for (int i = 1; i < lines.length; i++) {
+                            String activity = lines[i].trim();
+                            if (!activity.isEmpty()) {
+                                // Check for special pattern to highlight
+                                boolean isHighlight = activity.startsWith("");
+                                if (isHighlight) {
+                                    activity = activity.substring(2).trim();
+                                }
+                        %>
+                                <div class="activity-item flex items-start <%= isHighlight ? "font-semibold text-gray-800" : "text-gray-600" %>">
+                                    <div class="bullet w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                                    <% if (isHighlight) { %>
+                                        <span class="highlight bg-yellow-100 px-2 py-1 rounded">
+                                            <%= activity %>
+                                        </span>
+                                    <% } else { %>
+                                        <%= activity.replaceFirst("^-\\s*", "") %>
+                                    <% } %>
+                                </div>
+                        <% 
+                            }
+                        }
+                        %>
+                    </div>
+                </div>
+    <%
             }
-        } catch (Exception e) {
-            itineraryContent = "Unable to load itinerary at this time.";
+        }
+    } else { 
+    %>
+        <p class="text-gray-500">No itinerary information available for this tour.</p>
+    <% } %>
+</div>
+            </div>
+        </div>
+
+        <%-- Get related tours --%>
+        <%
+        int currentTourId = Integer.parseInt(request.getParameter("id"));
+        int currentCatId = 0;
+        String currentCatName = "";
+        ResultSet rs = null;
+        
+        // Get category information from joined tables
+        String categoryQuery = "SELECT c.cat_id, c.cat_name " +
+                               "FROM tour t " +
+                               "JOIN category c ON t.cat_id = c.cat_id " +
+                               "WHERE t.t_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(categoryQuery)) {
+            
+            pstmt.setInt(1, currentTourId);
+            try {
+                rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    currentCatId = rs.getInt("cat_id");
+                    currentCatName = rs.getString("cat_name");
+                }
+            } finally {
+                if (rs != null) rs.close();
+                pstmt.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); 
+        }
+
+        // Get related tours with first image
+        String relatedToursQuery = "SELECT t.t_id, t.title, t.dest, t.price, t.duration, " +
+                                   "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS main_image " +
+                                   "FROM tour t " +
+                                   "WHERE t.cat_id = ? AND t.t_id != ? " +
+                                   "ORDER BY t.s_date DESC " +
+                                   "LIMIT 4";
+
+        List<Map<String, Object>> relatedTours = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(relatedToursQuery)) {
+            
+            pstmt.setInt(1, currentCatId);
+            pstmt.setInt(2, currentTourId);
+            
+            rs = null;
+            try {
+                rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    Map<String, Object> tour = new HashMap<>();
+                    tour.put("t_id", rs.getInt("t_id"));
+                    tour.put("title", rs.getString("title"));
+                    tour.put("dest", rs.getString("dest"));
+                    tour.put("price", rs.getInt("price"));
+                    tour.put("duration", rs.getString("duration"));
+                    
+                    String imagePath = rs.getString("main_image");
+                    if (imagePath != null) {
+                        imagePath = request.getContextPath() + "/" + imagePath.replace("\\", "/");
+                    } else {
+                        imagePath = request.getContextPath() + "/images/default-tour.jpg";
+                    }
+                    tour.put("image", imagePath);
+                    
+                    relatedTours.add(tour);
+                }
+            } finally {
+                if (rs != null) rs.close();
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         %>
-        <pre class="whitespace-pre-wrap font-sans"><%= itineraryContent %></pre>
-    </div>
-</div>
 
-	
-	    
-    <%-- First get category ID of current tour --%>
-<%
-int currentTourId = Integer.parseInt(request.getParameter("id"));
-int currentCatId = 0;
-String currentCatName = "";
-ResultSet rs=null;
-// Get category information from joined tables
-String categoryQuery = "SELECT c.cat_id, c.cat_name " +
-                       "FROM tour t " +
-                       "JOIN category c ON t.cat_id = c.cat_id " +
-                       "WHERE t.t_id = ?";
-
-try (Connection conn = DBConnection.getConnection();
-     PreparedStatement pstmt = conn.prepareStatement(categoryQuery)) {
-    
-    pstmt.setInt(1, currentTourId);
-    try {
-    	rs = pstmt.executeQuery();
-        if (rs.next()) {
-            currentCatId = rs.getInt("cat_id");
-            currentCatName = rs.getString("cat_name");
-        }
-    }finally{
-    	rs.close();
-    	pstmt.close();
-    }
-} catch (SQLException e) {
-    e.printStackTrace(); 
-}finally{
-	rs.close();
-}
-%>
-
-<%-- Get related tours with first image --%>
-<%
-String relatedToursQuery = "SELECT t.t_id, t.title, t.dest, t.price, t.duration, " +
-                           "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS main_image " +
-                           "FROM tour t " +
-                           "WHERE t.cat_id = ? AND t.t_id != ? " +
-                           "ORDER BY t.s_date DESC " +
-                           "LIMIT 4";
-
-List<Map<String, Object>> relatedTours = new ArrayList<>();
-
-try (Connection conn = DBConnection.getConnection();
-     PreparedStatement pstmt = conn.prepareStatement(relatedToursQuery)) {
-    
-    pstmt.setInt(1, currentCatId);
-    pstmt.setInt(2, currentTourId);
-    
-    rs=null;
-    try{
-    	rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Map<String, Object> tour = new HashMap<>();
-            tour.put("t_id", rs.getInt("t_id"));
-            tour.put("title", rs.getString("title"));
-            tour.put("dest", rs.getString("dest"));
-            tour.put("price", rs.getInt("price"));
-            tour.put("duration", rs.getString("duration"));
-            
-            String imagePath = rs.getString("main_image");
-            if (imagePath != null) {
-                imagePath = request.getContextPath() + "/" + imagePath.replace("\\", "/");
-            } else {
-                imagePath = request.getContextPath() + "/images/default-tour.jpg";
-            }
-            tour.put("image", imagePath);
-            
-            relatedTours.add(tour);
-        }
-    }finally{
-    	rs.close();
-    }
-} catch (SQLException e) {
-    e.printStackTrace();
-}
-%>
-
-<!-- Display Section -->
-<div class="related-tours mt-12">
-    <h3 class="text-2xl font-bold mb-6">More <%= currentCatName %> Packages</h3>
-    
-    <% if (!relatedTours.isEmpty()) { %>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <% for (Map<String, Object> tour : relatedTours) { %>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <img src="<%= tour.get("image") %>" 
-                         alt="<%= tour.get("title") %>" 
-                         class="w-full h-48 object-cover">
-                    
-                    <div class="p-4">
-                        <h4 class="text-lg font-semibold mb-2"><%= tour.get("title") %></h4>
-                        <div class="flex items-center text-sm text-gray-600 mb-2">
-                            <span class="mr-2">📍 <%= tour.get("dest") %></span>
-                            <span>⏳ <%= tour.get("duration") %></span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                        	<div>
-                        	<span>from</span>
-                            <span class="text-lg font-bold text-blue-600">
-                                ₹<%= NumberFormat.getNumberInstance(Locale.US).format(tour.get("price")) %>
-                            </span>
-                            </div>
-                            <a href="viewTourDetails.jsp?id=<%= tour.get("t_id") %>" 
-                               class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-                                View
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            <% } %>
-        </div>
-    <% } else { %>
-        <div class="text-center py-8 bg-gray-50 rounded-lg">
-            <p class="text-gray-500">No other packages found in <%= currentCatName %> category</p>
-        </div>
-    <% } %>
-</div>
-        
-        
-        
-        <!-- Add this modal HTML before the closing </body> tag -->
-<div id="travelerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Select Number of Travelers</h3>
-            <div class="mt-2 px-7 py-3">
-                <div class="flex items-center justify-center gap-4">
-                    <button type="button" onclick="adjustModalTravelers(-1)" 
-                            class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">
-                        -
-                    </button>
-                    <input type="number" id="modalTravelers" min="1" max="<%= capacity %>" 
-                           class="w-20 text-center border rounded-md text-lg" value="1" readonly>
-                    <button type="button" onclick="adjustModalTravelers(1)" 
-                            class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors">
-                        +
-                    </button>
-                </div>
-                <p class="text-sm text-gray-500 mt-2">Maximum <%= capacity %> travelers allowed</p>
+        <!-- Related Tours Section -->
+        <div class="card">
+            <div class="p-6 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-2xl font-bold text-gray-800">More <%= currentCatName %> Packages</h2>
             </div>
-            <div class="items-center px-4 py-3">
-                <button onclick="confirmTravelers()" 
-                        class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+            
+            <div class="p-6">
+                <% if (!relatedTours.isEmpty()) { %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <% for (Map<String, Object> tour : relatedTours) { %>
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <img src="<%= tour.get("image") %>" 
+                                     alt="<%= tour.get("title") %>" 
+                                     class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h3 class="font-semibold text-gray-800 mb-1"><%= tour.get("title") %></h3>
+                                    <div class="flex items-center text-sm text-gray-600 mb-2">
+                                        <span class="mr-3">📍 <%= tour.get("dest") %></span>
+                                        <span>⏳ <%= tour.get("duration") %></span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-3">
+                                        <div>
+                                            <span class="text-xs text-gray-500">from</span>
+                                            <p class="text-[#e05d37] font-bold">₹<%= NumberFormat.getNumberInstance(Locale.US).format(tour.get("price")) %></p>
+                                        </div>
+                                        <a href="viewTourDetails.jsp?id=<%= tour.get("t_id") %>" 
+                                           class="px-3 py-1 primary-btn text-white text-sm rounded hover:bg-[#d04d27] transition-colors">
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-8 bg-gray-50 rounded-lg">
+                        <p class="text-gray-500">No other packages found in <%= currentCatName %> category</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traveler Selection Modal -->
+    <div id="travelerModal" class="modal">
+        <div class="modal-content w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-center">Select Number of Travelers</h3>
+            
+            <div class="flex items-center justify-center gap-6 my-6">
+                <button onclick="adjustModalTravelers(-1)"
+                        class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold hover:bg-gray-300">
+                    -
+                </button>
+                <input type="number" id="modalTravelers" min="1" max="<%= capacity %>" 
+                       class="w-16 text-center border rounded-md text-2xl font-bold p-1" value="1" readonly>
+                <button onclick="adjustModalTravelers(1)"
+                        class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold hover:bg-gray-300">
+                    +
+                </button>
+            </div>
+            
+            <p class="text-sm text-gray-500 text-center mb-6">
+                Maximum <%= capacity %> travelers allowed
+            </p>
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeTravelerModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="confirmTravelers()"
+                        class="px-4 py-2 primary-btn text-white rounded-md">
                     Confirm
                 </button>
-                <button onclick="closeModal()" 
-                        class="ml-3 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                    Cancel
-                </button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add this modal for traveler details -->
-<div id="travelerDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-2xl leading-6 font-medium text-gray-900 mb-4">Traveler Details</h3>
-            <div class="mt-2 px-7 py-3">
-                <div id="travelerFields" class="space-y-6"></div>
+    <!-- Traveler Details Modal -->
+    <div id="travelerDetailsModal" class="modal">
+        <div class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4 text-center">Traveler Details</h3>
+            
+            <div id="travelerFields" class="space-y-4 mb-6">
+                <!-- Will be populated dynamically -->
             </div>
-            <div class="items-center px-4 py-3">
-                <button onclick="submitTravelerDetails()" 
-                        class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeTravelerDetailsModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="submitTravelerDetails()"
+                        class="px-4 py-2 primary-btn text-white rounded-md">
                     Submit Details
                 </button>
-                <button onclick="closeTravelerDetailsModal()" 
-                        class="ml-3 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                    Cancel
-                </button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add hidden form for submission -->
-<form id="bookingForm" method="post" action="BookingServlet" class="hidden">
-    <input type="hidden" name="tourId" value="<%= id %>">
-    <input type="hidden" name="members" id="formMembers">
-    <input type="hidden" name="transportType" id="formTransportType">
-    <input type="hidden" name="totalPrice" id="formTotalPrice">
-    <input type="hidden" name="travelerDetails" id="formTravelerDetails">
-</form>
+    <!-- Hidden form for submission -->
+    <form id="bookingForm" method="post" action="../BookingServlet" class="hidden">
+        <input type="hidden" name="tourId" value="<%= id %>">
+        <input type="hidden" name="members" id="formMembers">
+        <input type="hidden" name="transportType" id="formTransportType">
+        <input type="hidden" name="totalPrice" id="formTotalPrice">
+        <input type="hidden" name="travelerDetails" id="formTravelerDetails">
+    </form>
 
-        
     <script>
-    <!-- In the JavaScript section -->
+        // Function to update the total price
         function updateTotalPrice() {
             const transportSelect = document.getElementById('transportSelect');
             const selectedOption = transportSelect.options[transportSelect.selectedIndex];
@@ -486,146 +696,156 @@ try (Connection conn = DBConnection.getConnection();
                 new Intl.NumberFormat('en-IN').format(totalPrice);
             
             // Show/hide transport price
-            const priceNote = document.getElementById('transportPriceNote');
+            const transportPriceNote = document.getElementById('transportPriceNote');
             if (selectedOption.value === 'none') {
-                priceNote.classList.add('hidden');
+                transportPriceNote.classList.add('hidden');
             } else {
-                priceNote.classList.remove('hidden');
+                transportPriceNote.classList.remove('hidden');
                 document.getElementById('transportPrice').textContent = 
                     new Intl.NumberFormat('en-IN').format(transportPrice);
             }
+            
+            // Show/hide traveler multiplier
+            const travelerMultiplier = document.getElementById('travelerMultiplier');
+            if (travelers > 1) {
+                travelerMultiplier.classList.remove('hidden');
+                document.getElementById('travelerCount').textContent = travelers;
+            } else {
+                travelerMultiplier.classList.add('hidden');
+            }
         }
 
-        function adjustTravelers(change) {
-            const input = document.getElementById('travelers');
-            let value = parseInt(input.value) + change;
-            value = Math.max(parseInt(input.min), Math.min(value, parseInt(input.max)));
-            input.value = value;
-            updateTotalPrice();
-        }
-
+        // Function to change the main image
         function changeImage(newSrc) {
             document.getElementById('mainImage').src = newSrc;
+            
+            // Update active thumbnail styling
+            const thumbnails = document.querySelectorAll('[id^="thumb-"]');
+            thumbnails.forEach(thumb => {
+                thumb.classList.remove('thumbnail-active');
+            });
+            
+            // Find the thumbnail that matches this image and highlight it
+            <% if (!images.isEmpty()) { %>
+                <% for (int i = 0; i < images.size(); i++) { %>
+                    if ('<%= images.get(i) %>' === newSrc) {
+                        document.getElementById('thumb-<%= i %>').classList.add('thumbnail-active');
+                    }
+                <% } %>
+            <% } %>
         }
 
-        // Initialize price calculation
-        updateTotalPrice();
-        
-        
-    </script>
-    
-    <script>
-// Add these functions to your existing script
-function showModal() {
-    document.getElementById('travelerModal').classList.remove('hidden');
-    document.getElementById('modalTravelers').value = document.getElementById('travelers').value;
-}
-
-function closeModal() {
-    document.getElementById('travelerModal').classList.add('hidden');
-}
-
-function adjustModalTravelers(change) {
-    const input = document.getElementById('modalTravelers');
-    let value = parseInt(input.value) + change;
-    value = Math.max(1, Math.min(value, <%= capacity %>));
-    input.value = value;
-}
-
-function confirmTravelers() {
-    const newValue = document.getElementById('modalTravelers').value;
-    console.log(newValue);
-    document.getElementById('travelers').value = newValue;
-    document.getElementById('travelerDisplay').textContent = newValue + " traveler";
-    
-    updateTotalPrice();
-    closeModal();
-    
-    // Submit the form
-    //document.querySelector('form').submit();
-}
-</script>
-
-<script>
-// Update the addDetails function
-function addDetails() {
-    const transportSelect = document.getElementById('transportSelect');
-    //if (transportSelect.value === 'none') {
-       // alert('Please select a transportation option before proceeding.');
-       //return;
-   // }
-    showTravelerDetailsModal();
-}
-
-function showTravelerDetailsModal() {
-    const modal = document.getElementById('travelerDetailsModal');
-    const travelerFields = document.getElementById('travelerFields');
-    travelerFields.innerHTML = '';
-    
-    const travelerCount = parseInt(document.getElementById('travelers').value);
-    
-    for(let i = 1; i <= travelerCount; i++) {
-        travelerFields.innerHTML += `<div class="traveler-group bg-gray-50 p-4 rounded-lg">
-                <h4 class="text-lg font-semibold mb-3">Traveler ${i} </h4>
-                <div class="space-y-3">
-                    <input type="text" required 
-                           class="w-full p-2 border rounded-md traveler-name" 
-                           placeholder="Full Name">
-                    <input type="number" required min="1" max="100"
-                           class="w-full p-2 border rounded-md traveler-age" 
-                           placeholder="Age">
-                    <select class="w-full p-2 border rounded-md traveler-gender">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer-not-to-say">Prefer not to say</option>
-                    </select>
-                </div>
-            </div>`;
-    }
-    
-    modal.classList.remove('hidden');
-}
-
-function closeTravelerDetailsModal() {
-    document.getElementById('travelerDetailsModal').classList.add('hidden');
-}
-
-function submitTravelerDetails() {
-    const travelers = [];
-    const names = document.querySelectorAll('.traveler-name');
-    const ages = document.querySelectorAll('.traveler-age');
-    const genders = document.querySelectorAll('.traveler-gender');
-
-    // Validate all fields
-    for(let i = 0; i < names.length; i++) {
-        if(!names[i].value || !ages[i].value || !genders[i].value) {
-            alert('Please fill all fields for Traveler ' + (i+1));
-            return;
+        // Traveler modal functions
+        function showTravelerModal() {
+            const modal = document.getElementById('travelerModal');
+            modal.classList.add('visible');
+            document.getElementById('modalTravelers').value = document.getElementById('travelers').value;
         }
-        if(ages[i].value < 1 || ages[i].value > 120) {
-            alert('Please enter a valid age (1-120) for Traveler ' + (i+1));
-            return;
+
+        function closeTravelerModal() {
+            document.getElementById('travelerModal').classList.remove('visible');
+        }
+
+        function adjustModalTravelers(change) {
+            const input = document.getElementById('modalTravelers');
+            let value = parseInt(input.value) + change;
+            value = Math.max(1, Math.min(value, <%= capacity %>));
+            input.value = value;
+        }
+
+        function confirmTravelers() {
+            const newValue = document.getElementById('modalTravelers').value;
+            document.getElementById('travelers').value = newValue;
+            document.getElementById('travelerDisplay').textContent = 
+                newValue + (newValue === "1" ? " traveler" : " travelers");
+            
+            updateTotalPrice();
+            closeTravelerModal();
+        }
+
+        // Traveler details functions
+        function addDetails() {
+            showTravelerDetailsModal();
+        }
+
+        function showTravelerDetailsModal() {
+            const modal = document.getElementById('travelerDetailsModal');
+            const travelerFields = document.getElementById('travelerFields');
+            travelerFields.innerHTML = '';
+            
+            const travelerCount = parseInt(document.getElementById('travelers').value);
+            
+            for(let i = 1; i <= travelerCount; i++) {
+                travelerFields.innerHTML += `<div class="traveler-group bg-gray-50 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-3">Traveler ${i} </h4>
+                        <div class="space-y-3">
+                            <input type="text" required 
+                                   class="w-full p-2 border rounded-md traveler-name" 
+                                   placeholder="Full Name">
+                            <input type="number" required min="1" max="100"
+                                   class="w-full p-2 border rounded-md traveler-age" 
+                                   placeholder="Age">
+                            <select class="w-full p-2 border rounded-md traveler-gender">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer-not-to-say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>`;
+            }
+            
+            modal.classList.add('visible');
+        }
+
+        function closeTravelerDetailsModal() {
+            document.getElementById('travelerDetailsModal').classList.remove('visible');
+        }
+
+        function submitTravelerDetails() {
+            const travelers = [];
+            const names = document.querySelectorAll('.traveler-name');
+            const ages = document.querySelectorAll('.traveler-age');
+            const genders = document.querySelectorAll('.traveler-gender');
+
+            // Validate all fields
+            for(let i = 0; i < names.length; i++) {
+                if(!names[i].value || !ages[i].value || !genders[i].value) {
+                    alert('Please fill all fields for Traveler ' + (i+1));
+                    return;
+                }
+                if(ages[i].value < 1 || ages[i].value > 120) {
+                    alert('Please enter a valid age (1-120) for Traveler ' + (i+1));
+                    return;
+                }
+                
+                travelers.push({
+                    name: names[i].value,
+                    age: ages[i].value,
+                    gender: genders[i].value
+                });
+            }
+
+            // Set form values
+            document.getElementById('formMembers').value = document.getElementById('travelers').value;
+            document.getElementById('formTransportType').value = document.getElementById('transportSelect').value;
+            document.getElementById('formTotalPrice').value = document.getElementById('totalPrice').textContent.replace(/,/g, '');
+            document.getElementById('formTravelerDetails').value = JSON.stringify(travelers);
+
+            // Submit the form
+            document.getElementById('bookingForm').submit();
         }
         
-        travelers.push({
-            name: names[i].value,
-            age: ages[i].value,
-            gender: genders[i].value
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set the first thumbnail as active
+            if (document.getElementById('thumb-0')) {
+                document.getElementById('thumb-0').classList.add('thumbnail-active');
+            }
+            
+            // Initialize price calculation
+            updateTotalPrice();
         });
-    }
-
-    // Set form values
-    document.getElementById('formMembers').value = document.getElementById('travelers').value;
-    document.getElementById('formTransportType').value = document.getElementById('transportSelect').value;
-    document.getElementById('formTotalPrice').value = document.getElementById('totalPrice').textContent.replace(/,/g, '');
-    document.getElementById('formTravelerDetails').value = JSON.stringify(travelers);
-
-    // Submit the form
-    //document.getElementById('bookingForm').submit();
-}
-</script>
-    
-    
+    </script>
 </body>
 </html>
