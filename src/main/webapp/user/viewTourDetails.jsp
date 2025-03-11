@@ -14,152 +14,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tour Package Details</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        /* Custom styles to enhance the UI */
-        :root {
-            --primary-color: #e05d37;
-            --primary-hover: #d04d27;
-            --light-bg: #f9fafb;
-            --border-color: #e5e7eb;
-        }
+    <link rel="stylesheet" href="./style/viewTourDetails.css">
         
-        body {
-            background-color: var(--light-bg);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-        
-        .container-custom {
-            max-width: 1350px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        .primary-btn {
-            background-color: var(--primary-color);
-            color: white;
-            transition: background-color 0.2s;
-        }
-        
-        .primary-btn:hover {
-            background-color: var(--primary-hover);
-        }
-        
-        .secondary-btn {
-            background-color: white;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.2s;
-        }
-        
-        .secondary-btn:hover {
-            background-color: var(--light-bg);
-        }
-        
-        .card {
-            background-color: white;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            overflow: hidden;
-        }
-        
-        .thumbnail-active {
-            border: 2px solid var(--primary-color);
-        }
-        
-        .itinerary-day {
-            border-left: 4px solid rgba(224, 93, 55, 0.3);
-            padding-left: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .itinerary-activity {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-        }
-        
-        .activity-bullet {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: rgba(224, 93, 55, 0.2);
-            margin-top: 0.5rem;
-            margin-right: 0.75rem;
-            flex-shrink: 0;
-        }
-        
-        /* Fixed heights for main containers */
-        .main-container {
-            height: 500px;
-        }
-        
-        .thumbnails-container {
-            width: 100%;
-            height: 500px;
-            overflow-y: auto;
-        }
-        
-        .main-image-container {
-            width: 100%;
-            height: 500px;
-            flex: 1;
-        }
-        
-        .info-container {
-            width: 100%;
-            height: 500px;
-            overflow-y: auto;
-        }
-        
-        @media (min-width: 768px) {
-            .thumbnails-container {
-                width: 13rem;
-                flex-shrink: 0;
-            }
-            
-            .info-container {
-                width: 20rem;
-                flex-shrink: 0;
-            }
-        }
-        
-        /* Modal styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none; /* Changed from flex to none to ensure modals are hidden by default */
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-        
-        /* When modal is visible */
-        .modal.visible {
-            display: flex;
-        }
-        
-        .modal-content {
-            background-color: white;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* Hide scrollbar but allow scrolling */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
 </head>
 
 <%
@@ -173,8 +29,8 @@
     // Initialize variables
     String firstImage = request.getContextPath() + "/images/1.jpeg";
     List<String> images = new ArrayList<>();
-    int basePrice = 0, capacity = 0;
-    String s_date = "", dest = "", transport = "", title = "";
+    int basePrice = 0, capacity = 0, disPrice=0;
+    String s_date = "", dest = "", transport = "", title = "", description="", hotel="", location="";
     Map<String, Integer> transportPrices = new HashMap<>();
     List<String> transportOptions = new ArrayList<>();
     NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
@@ -194,7 +50,7 @@
 
     try (Connection conn = DBConnection.getConnection()) {
         // Fetch main tour details
-        String tourQuery = "SELECT t.s_date, t.price, t.dest, t.capacity, t.transport, t.title, i.image_path, t.itinerary " +
+        String tourQuery = "SELECT t.s_date, t.price, t.descr, t.pdprice, t.dest, t.capacity, t.transport, t.title, i.image_path, t.itinerary " +
                          "FROM tour t LEFT JOIN images i ON t.t_id = i.t_id WHERE t.t_id = ?";
         
         try (PreparedStatement tourStmt = conn.prepareStatement(tourQuery)) {
@@ -204,11 +60,13 @@
             while (tourRs.next()) {
                 if (basePrice == 0) { // Only set once
                     basePrice = tourRs.getInt("price");
+                	disPrice = tourRs.getInt("pdprice");
                     s_date = tourRs.getString("s_date");
                     capacity = tourRs.getInt("capacity");
                     dest = tourRs.getString("dest");
                     transport = tourRs.getString("transport");
                     title = tourRs.getString("title");
+                    description = tourRs.getString("descr");
                     if (title == null || title.isEmpty()) {
                         title = "Denali Experience Tour from Talkeetna"; // Default title if not available
                     }
@@ -218,6 +76,18 @@
                 String imagePath = tourRs.getString("image_path");
                 if (imagePath != null && !imagePath.trim().isEmpty()) {
                     images.add(request.getContextPath() + "/" + imagePath.replace("\\", "/"));
+                }
+            }
+            
+            // Fetch hotel details
+            String hotelQuery = "SELECT hotel_name, area FROM hotel WHERE t_id = ?";
+            try (PreparedStatement hotelStmt = conn.prepareStatement(hotelQuery)) {
+                hotelStmt.setInt(1, id);
+                try (ResultSet hotelRs = hotelStmt.executeQuery()) {
+                    if (hotelRs.next()) {
+                        hotel = hotelRs.getString("hotel_name") != null ? hotelRs.getString("hotel_name") : hotel;
+                        location = hotelRs.getString("area") != null ? hotelRs.getString("area") : location;
+                    }
                 }
             }
         }
@@ -294,6 +164,7 @@
     }
 
     String formattedBasePrice = nf.format(basePrice);
+    String formattedDisPrice = nf.format(disPrice);
 %>
 
 <body class="py-8">
@@ -304,7 +175,7 @@
             <div class="p-6 border-b border-gray-200">
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-800"><%= title %></h1>
                 <p class="text-gray-600 mt-2 flex items-center">
-                    <span class="inline-block mr-2">📍</span> <%= dest %>, USA
+                    <span class="inline-block mr-2">📍</span> <%= dest %>
                 </p>
             </div>
 
@@ -337,8 +208,9 @@
                     <div class="space-y-6">
                         <!-- Price Section -->
                         <div>
-                            <p class="text-2xl font-bold text-gray-800">₹<span id="basePrice"><%= formattedBasePrice %></span></p>
-                            <p class="text-sm text-[#e05d37] underline">Lowest Price Guarantee</p>
+                            <p class="text-2xl font-bold text-gray-800"><del><span id="basePrice" class="m-2">₹<%= formattedBasePrice %></span></del>₹<span id="disPrice"><%= formattedDisPrice %></span></p>
+            
+                            <p class="text-sm text-[#e05d37] underline">Lowest Price Guarantee </p>
                         </div>
 
                         <!-- Date Section -->
@@ -420,77 +292,94 @@
                     </div>
                 </div>
             </div>
+            <div class="p-6">
+                <p class="text-gray-700">Description: <%= description %></p>
+                <p class="text-gray-700">Hotel: <%= hotel %></p>
+                <p class="text-gray-700">Location: <%= location %></p>
+            </div>
         </div>
 
         <!-- Itinerary Section - Enhanced -->
         <div class="card mb-10">
-            <div class="p-6 border-b border-gray-200 bg-gray-50">
+            <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-gray-800">Tour Itinerary</h2>
+                
+                <div class="flex items-center space-x-4">
+                    <% if (fileName != null && !fileName.isEmpty()) { %>
+                        <!-- Download Button -->
+                        <a href="../DownloadServlet?filename=<%= java.net.URLEncoder.encode(fileName, "UTF-8") %>" 
+                           class="inline-flex items-center px-4 py-2 bg-[#e05d37]/10 text-[#e05d37] rounded-md hover:bg-[#e05d37]/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download Itinerary
+                        </a>
+                    <% } %>
+                    
+                    <!-- Show/Hide Itinerary Button -->
+                    <button id="toggleItinerary" class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
+                        <span>Show Itinerary</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 itinerary-toggle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             <div class="p-6">
-                <% if (fileName != null && !fileName.isEmpty()) { %>
-                    <!-- Download Button -->
-                    <a href="../DownloadServlet?filename=<%= java.net.URLEncoder.encode(fileName, "UTF-8") %>" 
-                       class="inline-flex items-center mb-6 px-4 py-2 bg-[#e05d37]/10 text-[#e05d37] rounded-md hover:bg-[#e05d37]/20 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download Itinerary
-                    </a>
-                <% } %>
-                
-                <!-- Itinerary Content -->
-                <div id="itineraryContent" class="space-y-6">
-    <% 
-    if (itineraryContent != null && !itineraryContent.isEmpty()) {
-        String[] days = itineraryContent.split("\n\n");
-        for (String day : days) {
-            if (day.trim().isEmpty()) continue;
-            
-            String[] lines = day.split("\n");
-            if (lines.length > 0) {
-                String dayTitle = lines[0].trim();
-    %>
-                <div class="itinerary-day mb-8">
-                    <h3 class="text-xl font-bold text-blue-600 mb-3 border-b border-blue-100 pb-2">
-                        <%= dayTitle %>
-                    </h3>
-                    <div class="space-y-3 pl-4">
-                        <% 
-                        for (int i = 1; i < lines.length; i++) {
-                            String activity = lines[i].trim();
-                            if (!activity.isEmpty()) {
-                                // Check for special pattern to highlight
-                                boolean isHighlight = activity.startsWith("");
-                                if (isHighlight) {
-                                    activity = activity.substring(2).trim();
-                                }
-                        %>
-                                <div class="activity-item flex items-start <%= isHighlight ? "font-semibold text-gray-800" : "text-gray-600" %>">
-                                    <div class="bullet w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
-                                    <% if (isHighlight) { %>
-                                        <span class="highlight bg-yellow-100 px-2 py-1 rounded">
-                                            <%= activity %>
-                                        </span>
-                                    <% } else { %>
-                                        <%= activity.replaceFirst("^-\\s*", "") %>
-                                    <% } %>
-                                </div>
-                        <% 
-                            }
-                        }
-                        %>
-                    </div>
+                <!-- Itinerary Content - Initially Hidden -->
+                <div id="itineraryContent" class="itinerary-container hidden">
+                    <% 
+                    if (itineraryContent != null && !itineraryContent.isEmpty()) {
+                        String[] days = itineraryContent.split("\n\n");
+                        for (String day : days) {
+                            if (day.trim().isEmpty()) continue;
+                            
+                            String[] lines = day.split("\n");
+                            if (lines.length > 0) {
+                                String dayTitle = lines[0].trim();
+                    %>
+					                                <div class="itinerary-day mb-10">
+					    <h3 class="text-xl font-bold text-blue-600 mb-3 border-b border-blue-100 pb-2">
+					        <%= dayTitle %>
+					    </h3>
+					    <div class="space-y-3 pl-4">
+					        <% 
+					        for (int i = 1; i < lines.length; i++) {
+					            String activity = lines[i].trim();
+					            if (!activity.isEmpty()) {
+					                // Check for special pattern to highlight
+					                boolean isHighlight = activity.startsWith("**");
+					                if (isHighlight) {
+					                    activity = activity.substring(2).trim();
+					                }
+					        %>
+					                <div class="activity-item flex items-start <%= isHighlight ? "font-semibold text-gray-800" : "text-gray-600" %>">
+					                    <% if (!isHighlight) { %>
+					                        <div class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+					                    <% } %>
+					                    <% if (isHighlight) { %>
+					                        <span class="highlight bg-yellow-100 px-2 py-1 rounded">
+					                            <%= activity %>
+					                        </span>
+					                    <% } else { %>
+					                        <%= activity.replaceFirst("^-\\s*", "") %>
+					                    <% } %>
+					                </div>
+					        <% 
+					            }
+					        }
+					        %>
+					    </div>
+					</div>
+					<%
+					        }
+					    }
+					} else { 
+					%>
+					    <p class="text-gray-500">No itinerary information available for this tour.</p>
+					<% } %>
                 </div>
-    <%
-            }
-        }
-    } else { 
-    %>
-        <p class="text-gray-500">No itinerary information available for this tour.</p>
-    <% } %>
-</div>
             </div>
         </div>
 
@@ -615,7 +504,7 @@
 
     <!-- Traveler Selection Modal -->
     <div id="travelerModal" class="modal">
-        <div class="modal-content w-full max-w-md">
+        <div class="modal-content ">
             <h3 class="text-xl font-bold mb-4 text-center">Select Number of Travelers</h3>
             
             <div class="flex items-center justify-center gap-6 my-6">
@@ -650,7 +539,7 @@
 
     <!-- Traveler Details Modal -->
     <div id="travelerDetailsModal" class="modal">
-        <div class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="modal-content  max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold mb-4 text-center">Traveler Details</h3>
             
             <div id="travelerFields" class="space-y-4 mb-6">
@@ -836,6 +725,25 @@
             document.getElementById('bookingForm').submit();
         }
         
+        // Toggle itinerary visibility
+        function toggleItinerary() {
+            const itineraryContent = document.getElementById('itineraryContent');
+            const toggleButton = document.getElementById('toggleItinerary');
+            const toggleIcon = toggleButton.querySelector('.itinerary-toggle');
+            
+            if (itineraryContent.classList.contains('hidden')) {
+                // Show itinerary
+                itineraryContent.classList.remove('hidden');
+                toggleButton.querySelector('span').textContent = 'Hide Itinerary';
+                toggleIcon.classList.add('open');
+            } else {
+                // Hide itinerary
+                itineraryContent.classList.add('hidden');
+                toggleButton.querySelector('span').textContent = 'Show Itinerary';
+                toggleIcon.classList.remove('open');
+            }
+        }
+        
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             // Set the first thumbnail as active
@@ -845,7 +753,11 @@
             
             // Initialize price calculation
             updateTotalPrice();
+            
+            // Add event listener for itinerary toggle
+            document.getElementById('toggleItinerary').addEventListener('click', toggleItinerary);
         });
     </script>
 </body>
 </html>
+

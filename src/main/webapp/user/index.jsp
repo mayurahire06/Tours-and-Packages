@@ -60,7 +60,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-cog"></i> Admin
+                                <i class="fas fa-user-cog"></i> <%= session.getAttribute("user") != null ? session.getAttribute("user") : "Guest" %>
                             </a>
                             <!-- Dropdown Menu -->
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -160,7 +160,7 @@
 						<img src="<%= imageUrl %>" class="card-img-top" alt="<%= rs.getString("title") %>">
 							<div class="card-body">
                             <h5 class="card-title"><%= rs.getString("title") %></h5>
-                            <p class="card-text"><%= rs.getString("descr") %></p>
+                           
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-primary">7 Days</span>
                                 <h5 class="text-success mb-0"></h5>
@@ -205,11 +205,12 @@
                 try {
                     conn = DBConnection.getConnection();
                     stmt = conn.createStatement();
-                    String sql = "SELECT DISTINCT dest FROM tour ORDER BY dest ASC";
+                    String sql = "SELECT dest, MIN(t_id) AS t_id FROM tour GROUP BY dest ORDER BY dest ASC;";
                     rs = stmt.executeQuery(sql);
                     
                     while(rs.next()) {
                         String destination = rs.getString("dest");
+                        int t_id = rs.getInt("t_id");
                         if(count % 5 == 0) { // Start new column after every 5 items
                 %>
                             <div class="w-56 flex-shrink-0"> <!-- Column container -->
@@ -219,7 +220,7 @@
                 %>
                                 <li class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border">
                                     <div class="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                                    <span class="text-gray-700"><%= destination %></span>
+                                    <a href="viewTourDetails.jsp?id=<%= t_id %>" class="text-gray-700"><%= destination %></a>
                                 </li>
                 <%
                         count++;
