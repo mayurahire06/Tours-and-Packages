@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Ticket</title>
+  <!-- MDBootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="ticket-styles.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <!-- Ticket Container -->
+        <div class="ticket-container">
+          <!-- Ticket Header -->
+          <div class="ticket-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="logo-container">
+                <h2 class="mb-0">SkyWay</h2>
+                <span class="tagline">Premium Airways</span>
+              </div>
+              <div class="ticket-type">
+                <span class="badge bg-primary rounded-pill">BUSINESS CLASS</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ticket Body -->
+          <div class="ticket-body">
+            <div class="row">
+              <!-- Left Section - Flight Details -->
+              <div class="col-md-8 pe-md-4">
+                <div class="flight-info mb-4">
+                  <div class="row">
+                    <div class="col-5">
+                      <div class="city">MUMBAI</div>
+                      <div class="airport">Chhatrapati Shivaji (BOM)</div>
+                      <div class="time">07:45</div>
+                      <div class="date">15 MAR 2025</div>
+                    </div>
+                    <div class="col-2 flight-path">
+                      <div class="plane-icon">
+                        <i class="fas fa-plane"></i>
+                      </div>
+                      <div class="flight-line"></div>
+                    </div>
+                    <div class="col-5 text-end">
+                      <div class="city">DELHI</div>
+                      <div class="airport">Indira Gandhi (DEL)</div>
+                      <div class="time">10:15</div>
+                      <div class="date">15 MAR 2025</div>
+                    </div>
+                  </div>
+                  <div class="flight-details mt-3">
+                    <div class="row text-center">
+                      <div class="col-4">
+                        <div class="detail-label">FLIGHT</div>
+                        <div class="detail-value">SK 421</div>
+                      </div>
+                      <div class="col-4">
+                        <div class="detail-label">GATE</div>
+                        <div class="detail-value">B12</div>
+                      </div>
+                      <div class="col-4">
+                        <div class="detail-label">SEAT</div>
+                        <div class="detail-value">14A</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passenger Info -->
+                <div class="passenger-info mb-4">
+                  <h5 class="section-title">PASSENGER INFORMATION</h5>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info-label">NAME</div>
+                      <div class="info-value">RAHUL SHARMA</div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-label">AGE</div>
+                      <div class="info-value">32</div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-label">GENDER</div>
+                      <div class="info-value">MALE</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Additional Info -->
+                <div class="additional-info">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info-label">BOOKING REF</div>
+                      <div class="info-value">SKYW2345678</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-label">ISSUED</div>
+                      <div class="info-value">12 MAR 2025, 14:30</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Right Section - Barcode and QR -->
+              <div class="col-md-4 ps-md-4 border-start">
+                <div class="boarding-section text-center">
+                  <h5 class="boarding-title">BOARDING PASS</h5>
+                  <div class="qr-code mb-3" id="qrcode"></div>
+                  <div class="boarding-info">
+                    <div class="info-label">BOARDING TIME</div>
+                    <div class="info-value">07:15 AM</div>
+                    <div class="info-label mt-2">TERMINAL</div>
+                    <div class="info-value">TERMINAL 2</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ticket Footer -->
+          <div class="ticket-footer">
+            <div class="barcode-container text-center">
+              <div id="barcode"></div>
+              <div class="barcode-text">SK421 BOMDELRAHULSHARMA14A</div>
+            </div>
+            <div class="footer-note text-center mt-2">
+              <small>This ticket is non-refundable and non-transferable. Please arrive at the airport at least 2 hours before departure.</small>
+            </div>
+          </div>
+          
+          <!-- Tear Line -->
+          <div class="tear-line">
+            <div class="tear-circles"></div>
+          </div>
+          
+          <!-- Ticket Stub -->
+          <div class="ticket-stub">
+            <div class="row">
+              <div class="col-6">
+                <div class="stub-label">FLIGHT</div>
+                <div class="stub-value">SK 421</div>
+                <div class="stub-label">PASSENGER</div>
+                <div class="stub-value">RAHUL SHARMA</div>
+              </div>
+              <div class="col-6 text-end">
+                <div class="stub-label">FROM - TO</div>
+                <div class="stub-value">BOM - DEL</div>
+                <div class="stub-label">SEAT</div>
+                <div class="stub-value">14A</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Print Button -->
+        <div class="text-center mt-4">
+          <button class="btn btn-primary" id="print-ticket">
+            <i class="fas fa-print me-2"></i> Print Ticket
+          </button>
+          <button class="btn btn-success ms-2" id="download-ticket">
+            <i class="fas fa-download me-2"></i> Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MDBootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+  <!-- QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <!-- JsBarcode Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Custom JS -->
+  <script src="ticket-script.js"></script>
+</body>
+</html>

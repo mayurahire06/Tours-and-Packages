@@ -43,72 +43,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-mountain"></i> ExploreEase: India
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#packages">Packages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#destinations">Destinations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-cog"></i> <%= session.getAttribute("user") != null ? session.getAttribute("user") : "Guest" %>
-                            </a>
-                            <!-- Dropdown Menu -->
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <!-- Profile -->
-                                <li>
-                                    <a class="dropdown-item" href="./includes/profile.jsp">
-                                        <i class="fas fa-user"></i> Profile
-                                    </a>
-                                </li>
-
-                                <!-- Settings -->
-                                <li>
-                                    <a class="dropdown-item" href="./includes/settings.jsp">
-                                        <i class="fas fa-cog"></i> Settings
-                                    </a>
-                                </li>
-
-                                <!-- Change Password -->
-                                <li>
-                                    <a class="dropdown-item" href="./includes/changePassword.jsp">
-                                        <i class="fas fa-key"></i> Change Password
-                                    </a>
-                                </li>
-
-                                <!-- Notifications -->
-                                <li>
-                                    <a class="dropdown-item" href="./includes/notifications.jsp">
-                                        <i class="fas fa-bell"></i> Notifications
-                                    </a>
-                                </li>
-
-                                <!-- Divider -->
-                                <li><hr class="dropdown-divider"></li>
-
-                                <!-- Logout -->
-                                <li>
-                                    <a class="dropdown-item" href="./logout.jsp">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </ul>
-                
-            </div>
-        </div>
-    </nav>
+    <%@include file="./includes/navbar.jsp" %>
 
     <!-- Hero Section -->
     <section class="hero-section text-white d-flex align-items-center">
@@ -138,7 +73,7 @@
     try {
         conn = DBConnection.getConnection();
         // Fetch the first image for each tour
-        String query = "SELECT t.t_id, t.title, t.descr, " +
+        String query = "SELECT t.t_id, t.duration, t.s_date, t.title, t.descr, " +
                        "(SELECT i.image_path FROM images i WHERE i.t_id = t.t_id LIMIT 1) AS image_path " +
                        "FROM tour t";
         pstmt = conn.prepareStatement(query);
@@ -146,9 +81,11 @@
 
         while (rs.next()) {
             String imagePath = rs.getString("image_path");
+            
             String defaultImage = "../images/1.jpeg";// Default image path
             String imageUrl = defaultImage; // Default to the default image
-
+			int duration = rs.getInt("duration");
+            String date = rs.getString("s_date");
             if (imagePath != null && !imagePath.trim().isEmpty()) {
                 // Fix the image path for the browser
                 imageUrl = request.getContextPath() + "/" + imagePath.replace("\\", "/").replace("./", "");
@@ -162,8 +99,8 @@
                             <h5 class="card-title"><%= rs.getString("title") %></h5>
                            
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-primary">7 Days</span>
-                                <h5 class="text-success mb-0"></h5>
+                                <span class="badge bg-primary"><%= rs.getInt("duration") %> Days</span>
+                                 <p class="text-success mb-0">start from <%= date %></p>
                                  <a href="viewTourDetails.jsp?id=<%= rs.getInt("t_id") %>" class="btn btn-primary">View Package</a>
                             </div>
                         </div>

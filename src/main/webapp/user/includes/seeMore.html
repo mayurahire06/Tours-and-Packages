@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expandable Text Example</title>
+    <style>
+        /* Container for the text */
+        .text-container {
+            max-width: 600px;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Initially visible text (limited height) */
+        .short-text {
+            max-height: 4.8em; /* Roughly 3 lines, adjust based on line-height */
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.3s ease; /* Smooth transition for expansion */
+        }
+
+        /* Full text when expanded */
+        .full-text {
+            max-height: none; /* Remove height restriction */
+        }
+
+        /* "See More" button styling */
+        .see-more-btn {
+            color: #e05d37;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .see-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Optional fade effect at the bottom of short text */
+        .short-text::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1.5em;
+            background: linear-gradient(to bottom, transparent, #fff 90%);
+            pointer-events: none; /* Prevents interference with clicks */
+        }
+
+        /* Hide the fade effect when expanded */
+        .full-text::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="text-container">
+        <div id="textContent" class="short-text">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            This is additional text that will be hidden initially. Click "See More" to reveal it all!
+        </div>
+        <span id="seeMoreBtn" class="see-more-btn">See More</span>
+    </div>
+
+    <script>
+        // Get elements
+        const textContent = document.getElementById('textContent');
+        const seeMoreBtn = document.getElementById('seeMoreBtn');
+
+        // Toggle function
+        function toggleText() {
+            if (textContent.classList.contains('short-text')) {
+                // Expand text
+                textContent.classList.remove('short-text');
+                textContent.classList.add('full-text');
+                seeMoreBtn.textContent = 'See Less';
+            } else {
+                // Collapse text
+                textContent.classList.remove('full-text');
+                textContent.classList.add('short-text');
+                seeMoreBtn.textContent = 'See More';
+            }
+        }
+
+        // Add click event to button
+        seeMoreBtn.addEventListener('click', toggleText);
+
+        // Optional: Check if text overflows initially to hide button if not needed
+        document.addEventListener('DOMContentLoaded', () => {
+            if (textContent.scrollHeight <= textContent.clientHeight) {
+                seeMoreBtn.style.display = 'none'; // Hide button if no overflow
+            }
+        });
+    </script>
+</body>
+</html>

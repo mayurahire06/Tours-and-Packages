@@ -4,9 +4,9 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
-<%-- Add this at the top of your JSP --%>
 <%@ page import="java.nio.file.Files" %>
 <%@ page import="java.nio.file.Paths" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -118,6 +118,8 @@
                         ResultSet transportRs = transportStmt.executeQuery();
                         if (transportRs.next()) {
                             transportPrices.put(transportType, transportRs.getInt(1));
+                            //HttpSession transportSession = request.getSession(false);
+                            userSession.setAttribute("transportationPrice", transportRs.getInt(1));
                         }
                     }
                 }
@@ -142,7 +144,7 @@
                     // Handle both forward and backslashes
                     String normalizedPath = filePath.replace("\\", "/");
                     fileName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
-                    
+                    //System.out.println("filename:" +fileName);
                     if (Files.exists(Paths.get(filePath))) {
                         itineraryContent = new String(Files.readAllBytes(Paths.get(filePath)));
                     } else {
@@ -165,6 +167,7 @@
 
     String formattedBasePrice = nf.format(basePrice);
     String formattedDisPrice = nf.format(disPrice);
+    userSession.setAttribute("basePrice", formattedDisPrice);
 %>
 
 <body class="py-8">
@@ -189,7 +192,7 @@
                                 <div class="cursor-pointer transition-all duration-300" onclick="changeImage('<%= img %>')" id="thumb-<%= images.indexOf(img) %>">
                                     <img src="<%= img %>" 
                                          alt="Tour image <%= images.indexOf(img) + 1 %>" 
-                                         class="h-28 w-full object-cover rounded-md">
+                                         class="h-28 w-full object-cover">
                                 </div>
                             <% } %>
                         <% } else { %>
@@ -208,7 +211,7 @@
                     <div class="space-y-6">
                         <!-- Price Section -->
                         <div>
-                            <p class="text-2xl font-bold text-gray-800"><del><span id="basePrice" class="m-2">₹<%= formattedBasePrice %></span></del>₹<span id="disPrice"><%= formattedDisPrice %></span></p>
+                            <p class="text-2xl font-bold text-gray-800"><del><span class="m-2">₹<%= formattedBasePrice %></span></del>₹<span id="basePrice"><%= formattedDisPrice %></span></p>
             
                             <p class="text-sm text-[#e05d37] underline">Lowest Price Guarantee </p>
                         </div>
@@ -260,7 +263,7 @@
                         <div class="text-sm text-gray-600 border-t border-gray-200 pt-4">
                             <div class="flex justify-between mb-1">
                                 <span>Base Price:</span>
-                                <span>₹<%= formattedBasePrice %></span>
+                                <span>₹<%= formattedDisPrice %></span>
                             </div>
                             
                             <div id="transportPriceNote" class="flex justify-between mb-1 hidden">
@@ -275,7 +278,7 @@
                             
                             <div class="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-200">
                                 <span>Total:</span>
-                                <span>₹<span id="totalPrice"><%= formattedBasePrice %></span></span>
+                                <span>₹<span id="totalPrice"><%= formattedDisPrice %></span></span>
                             </div>
                         </div>
 
@@ -339,7 +342,7 @@
                             if (lines.length > 0) {
                                 String dayTitle = lines[0].trim();
                     %>
-					                                <div class="itinerary-day mb-10">
+					<div class="itinerary-day mb-10">
 					    <h3 class="text-xl font-bold text-blue-600 mb-3 border-b border-blue-100 pb-2">
 					        <%= dayTitle %>
 					    </h3>
@@ -560,7 +563,7 @@
     </div>
 
     <!-- Hidden form for submission -->
-    <form id="bookingForm" method="post" action="../BookingServlet" class="hidden">
+    <form id="bookingForm" method="post" action="../BookingServlet" class="hidden" target="_blanck">
         <input type="hidden" name="tourId" value="<%= id %>">
         <input type="hidden" name="members" id="formMembers">
         <input type="hidden" name="transportType" id="formTransportType">
@@ -574,11 +577,11 @@
             const transportSelect = document.getElementById('transportSelect');
             const selectedOption = transportSelect.options[transportSelect.selectedIndex];
             const transportPrice = parseInt(selectedOption.dataset.price) || 0;
-            const basePrice = <%= basePrice %>;
+            const disPrice = <%= disPrice %>;
             const travelers = parseInt(document.getElementById('travelers').value);
             
             // Calculate total price
-            const totalPrice = (basePrice + transportPrice) * travelers;
+            const totalPrice = (disPrice + transportPrice) * travelers;
             
             // Update display
             document.getElementById('totalPrice').textContent = 
