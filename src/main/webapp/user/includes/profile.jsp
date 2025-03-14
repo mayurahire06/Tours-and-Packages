@@ -10,9 +10,9 @@
 <body>
     <div class="container mt-4">
         <h2>Admin Profile</h2>
-        <p>Name: <strong>Admin Name</strong></p>
-        <p>Email: <strong>admin@example.com</strong></p>
-        <p>Role: <strong>Administrator</strong></p>
+        <p>Name: <strong>User Name</strong></p>
+        <p>Email: <strong>user@example.com</strong></p>
+        <p>Role: <strong>User</strong></p>
         <a href="settings.jsp" class="btn btn-primary">Edit Profile</a>
     </div>
 </body>

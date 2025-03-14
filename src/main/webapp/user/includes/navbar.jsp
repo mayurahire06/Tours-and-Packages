@@ -12,19 +12,20 @@
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="fas fa-mountain"></i> ExploreEase: India
+                   
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#packages">Packages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#destinations">Destinations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-                    <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link text-white" href="#packages">Packages</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#destinations">Destinations</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#testimonials">Testimonials</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#contact">Contact</a></li>
+                    <ul class="navbar-nav ms-auto ">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-cog"></i> <%= session.getAttribute("user") != null ? session.getAttribute("user") : "Guest" %>
                             </a>
                             <!-- Dropdown Menu -->

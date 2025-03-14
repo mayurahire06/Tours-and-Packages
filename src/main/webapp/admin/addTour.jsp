@@ -132,10 +132,10 @@
 			            <label for="busSeats" class="form-label">Available Seats</label>
 			            <input type="number" class="form-control" id="busSeats" name="busSeats">
 			        </div>
-			        <div class="col-md-6">
+			        <!-- <div class="col-md-6">
 			            <label for="busImg" class="form-label">Bus Image</label>
 			            <input type="file" class="form-control" id="busImg" name="busImg">
-			        </div>
+			        </div>-->
         		</div>
 
                 <!-- Train Details-->
@@ -164,10 +164,10 @@
 			            <label for="trainSeats" class="form-label">Available Seats</label>
 			            <input type="number" class="form-control" id="trainSeats" name="trainSeats">
 			        </div>
-			        <div class="col-md-6">
+			        <!--  <div class="col-md-6">
 			            <label for="trainImg" class="form-label">Train Image</label>
 			            <input type="file" class="form-control" id="trainImg" name="trainImg">
-			        </div>
+			        </div>-->
                 </div>
 
                 <!-- Flight Details-->
@@ -194,10 +194,10 @@
 			            <label for="flightSeats" class="form-label">Available Seats</label>
 			            <input type="number" class="form-control" id="flightSeats" name="flightSeats">
 			        </div>
-			        <div class="col-md-6">
+			       <!--  <div class="col-md-6">
 			            <label for="flightImg" class="form-label">Flight Image</label>
 			            <input type="file" class="form-control" id="flightImg" name="flightImg">
-			        </div>
+			        </div>-->
                  </div>
               </div>
 
@@ -264,7 +264,7 @@
 	  
 					   <!-- Image Field -->
 					  <div class="mb-3">
-					      <label for="images" class="form-label">Tour Image</label>
+					      <label for="images" class="form-label">Tour Images</label>
 					      <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple required>
 					  </div>
 					  

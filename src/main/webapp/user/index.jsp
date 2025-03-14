@@ -26,8 +26,13 @@
         
         .package-card:hover {
             transform: translateY(-5px);
-            transition: all 0.3s ease;
+            /*transform: scale(1.03);*/
+            transition: all 0.3s ease-in;
         }
+         /* Blur effect for non-hovered cards 
+        .package-card:hover .card-img-top:not(:hover) {
+            filter: blur(3px);
+        }*/
         
         .testimonial-card {
             background: rgba(255, 255, 255, 0.9);
@@ -260,10 +265,10 @@
         });
 
         // Search functionality
-        document.querySelector('.search-box button').addEventListener('click', () => {
-            const searchTerm = document.querySelector('.search-box input').value;
-            alert(Searching for: ${searchTerm});
-        });
+       // document.querySelector('.search-box button').addEventListener('click', () => {
+         //   const searchTerm = document.querySelector('.search-box input').value;
+         //   alert(Searching for: ${searchTerm});
+       // });
 
         // Card hover effects
         document.querySelectorAll('.package-card').forEach(card => {

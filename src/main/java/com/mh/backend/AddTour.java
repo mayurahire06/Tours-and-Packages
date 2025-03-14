@@ -53,7 +53,7 @@ public class AddTour extends HttpServlet {
         Time busArrivalTime = null;
         Time busDepartureTime = null;
         int busSeats = 0;
-        String busImg = "";
+        //String busImg = "";
         
         //Train details
         String trainCompany = "";
@@ -61,7 +61,7 @@ public class AddTour extends HttpServlet {
         Time trainArrivalTime = null;
         Time trainDepartureTime = null;
         int trainSeats = 0;
-        String trainImg = "";
+        //String trainImg = "";
         
         //Flight details
         String flightCompany = "";
@@ -69,7 +69,7 @@ public class AddTour extends HttpServlet {
         Time flightArrivalTime = null;
         Time flightDepartureTime = null;
         int flightSeats = 0;
-        String flightImg = "";
+        //String flightImg = "";
         
         //Transportation is selected or not
         boolean isBusSelected = false;
@@ -192,8 +192,8 @@ public class AddTour extends HttpServlet {
 		            busDepartureTime = Time.valueOf(request.getParameter("busDepartureTime") + ":00");
 		            busSeats = Integer.parseInt(request.getParameter("busSeats"));
 		           
-		            Part imagePart = request.getPart("busImg");
-		            busImg = singleImage(imagePart, ".\\tour_bus");
+		            //Part imagePart = request.getPart("busImg");
+		            //busImg = singleImage(imagePart, ".\\tour_bus");
 	        	}
 	        	
 	        	//Train selected
@@ -204,8 +204,8 @@ public class AddTour extends HttpServlet {
 		            trainDepartureTime = Time.valueOf(request.getParameter("trainDepartureTime") + ":00");
 		            trainSeats = Integer.parseInt(request.getParameter("trainSeats"));
 		            
-		            Part imagePart = request.getPart("trainImg");
-		            trainImg = singleImage(imagePart, ".\\tour_train");
+		            //Part imagePart = request.getPart("trainImg");
+		            //trainImg = singleImage(imagePart, ".\\tour_train");
 	        	}
 	        	
 	        	//Flight selected
@@ -216,8 +216,8 @@ public class AddTour extends HttpServlet {
 		            flightDepartureTime = Time.valueOf(request.getParameter("flightDepartureTime") + ":00");
 		            flightSeats = Integer.parseInt(request.getParameter("flightSeats"));
 		            
-		            Part imagePart = request.getPart("flightImg");
-		            flightImg = singleImage(imagePart, ".\\tour_flight");
+		            //Part imagePart = request.getPart("flightImg");
+		            //flightImg = singleImage(imagePart, ".\\tour_flight");
 	        	}
             }
        
@@ -254,7 +254,6 @@ public class AddTour extends HttpServlet {
                         tourId = rs.getInt(1);
                     }
                     
-                    
                     //call to images
                     uploadImages(request, response, tourId, conn);
                     
@@ -270,7 +269,7 @@ public class AddTour extends HttpServlet {
                     
                     //check is bus selected
                    if (isBusSelected) {
-		               String sql2 = "INSERT INTO bus (t_id, bus_company, source, busTicket, arrival_time, departure_time, available_seats, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		               String sql2 = "INSERT INTO bus (t_id, bus_company, source, busTicket, arrival_time, departure_time, available_seats) VALUES (?, ?, ?, ?, ?, ?, ?)";
 			           stmt2 = conn.prepareStatement(sql2);
 			           
 			           stmt2.setInt(1, tourId);
@@ -280,14 +279,14 @@ public class AddTour extends HttpServlet {
 			           stmt2.setTime(5, busArrivalTime);
 			           stmt2.setTime(6, busDepartureTime);
 			           stmt2.setInt(7, busSeats);
-			           stmt2.setString(8, busImg);
+			           //stmt2.setString(8, busImg);
 			           rowsInserted2 = stmt2.executeUpdate();
 		        
                    }
                    
                   //check is train selected
                    if (isTrainSelected) {
-		               String sql3 = "INSERT INTO train (t_id, train_company, source, trainTicket, arrival_time, departure_time, available_seats, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		               String sql3 = "INSERT INTO train (t_id, train_company, source, trainTicket, arrival_time, departure_time, available_seats) VALUES (?, ?, ?, ?, ?, ?, ?)";
 			           stmt3 = conn.prepareStatement(sql3);
 			           
 			           stmt3.setInt(1, tourId);
@@ -297,14 +296,14 @@ public class AddTour extends HttpServlet {
 			           stmt3.setTime(5, trainArrivalTime);
 			           stmt3.setTime(6, trainDepartureTime);
 			           stmt3.setInt(7, trainSeats);
-			           stmt3.setString(8, trainImg);
+			           //stmt3.setString(8, trainImg);
 			           rowsInserted3 = stmt3.executeUpdate();
 
                    }
                    
                   //check is flight selected
                    if (isFlightSelected) {
-		               String sql4 = "INSERT INTO flight (t_id, flight_company, source, flightTicket, arrival_time, departure_time, available_seats, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		               String sql4 = "INSERT INTO flight (t_id, flight_company, source, flightTicket, arrival_time, departure_time, available_seats) VALUES (?, ?, ?, ?, ?, ?, ?)";
 			           stmt4 = conn.prepareStatement(sql4);
 			           
 			           stmt4.setInt(1, tourId);
@@ -314,7 +313,7 @@ public class AddTour extends HttpServlet {
 			           stmt4.setTime(5, flightArrivalTime);
 			           stmt4.setTime(6, flightDepartureTime);
 			           stmt4.setInt(7, flightSeats);
-			           stmt4.setString(8, flightImg);
+			           //stmt4.setString(8, flightImg);
 			           rowsInserted4 = stmt4.executeUpdate();
 
                    }
@@ -348,7 +347,7 @@ public class AddTour extends HttpServlet {
     }
     
     //for single image
-    private String singleImage(Part img, String uploadDir) throws IOException {
+    /*private String singleImage(Part img, String uploadDir) throws IOException {
         
         // Ensure the part is not null and contains a file
         if (img == null || img.getSize() <= 0) {
@@ -377,7 +376,7 @@ public class AddTour extends HttpServlet {
             }
         }
         return imagePath;
-    }
+    }*/
     
     
   //for multiple images
