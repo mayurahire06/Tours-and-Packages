@@ -300,19 +300,28 @@
     <div id="credit-card-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h3>Enter Credit/Debit Card Details</h3>
-            <form id="credit-card-form" action="ticket.jsp">
+            <h2>Enter Credit/Debit Card Details</h2>
+            <form id="credit-card-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
                 <label for="card-number">Card Number</label>
-                <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
-                <label for="expiry">Expiration Date (MM/YYYY)</label>
-                <input type="text" id="expiry" placeholder="MM/YYYY" required>
+                <input type="number" id="card-number" 
+                 pattern="^\d{13,19}$"
+  				 title="Please enter a 13 to 19-digit number."
+                 value="1234567891234" required>
+                
+                <!-- <label for="expiry">Expiration Date (MM/YYYY)</label>
+                <input type="text" id="expiry" placeholder="MM/YYYY" required>-->
+                
                 <label for="cvv">CVV</label>
-                <input type="text" id="cvv" placeholder="123" required>
-                <label for="cardholder-name">Cardholder Name</label>
-                <input type="text" id="cardholder-name" placeholder="John Doe" required>
+                <input type="number" id="cvv" pattern="^\d{3,4}$"
+                title="CVV must be 3 or 4 digits." value="123" required>
+                
+                <label for="cardholder-name">Card holder Name</label>
+                <input type="text" id="cardholder-name" 
+                title="Card holder name is required."
+                value="Mayur Ahire" required>
+                
                 <button type="submit">Submit</button>
             </form>
-            <p id="credit-card-error" class="error"></p>
         </div>
     </div>
 
@@ -321,14 +330,19 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter UPI Details</h3>
-            <form id="upi-form" action="${pageContext.request.contextPath}/user/ticket.html" target="_blank">
+            <form id="upi-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
                 <label for="upi-id">UPI ID</label>
-                <input type="text" id="upi-id" placeholder="example@upi" required>
+                <input type="text" id="upi-id" pattern=".+@.+" 
+                title="Please enter a valid upi id."
+				value="mayur@paytm" required>
+				  
                 <label for="upi-pin">PIN</label>
-                <input type="password" id="upi-pin" placeholder="****" required>
+                <input type="password" id="upi-pin" 
+                 pattern="^\d{4}$|^\d{6}$"
+				  title="Please enter 4 or 6-digit password."
+				  value="123456" required>
                 <button type="submit">Submit</button>
             </form>
-            <p id="upi-error" class="error"></p>
         </div>
     </div>
 
@@ -337,7 +351,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Net Banking Credentials</h3>
-            <form id="net-banking-form">
+            <form id="net-banking-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
                 <label for="bank-name">Bank Name</label>
                 <select id="bank-name" required>
                     <option value="">Select Bank</option>
@@ -345,13 +359,18 @@
                     <option value="icici">ICICI</option>
                     <option value="hdfc">HDFC</option>
                 </select>
-                <label for="username">Username/Account Number</label>
-                <input type="text" id="username" placeholder="Username or Account" required>
+                
+                <label for="username">Account Number</label>
+                <input type="number" id="username" 
+                pattern="^\d{10}$" 
+			    title="Account number must be exactly 10 digits."
+			    value="1234567890" required>
+                
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Password" required>
+                <input type="password" id="password" pattern="^\d{6}$" value="123456" required>
+                
                 <button type="submit">Submit</button>
             </form>
-            <p id="net-banking-error" class="error"></p>
         </div>
     </div>
 
@@ -360,7 +379,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Wallet Details</h3>
-            <form id="wallet-form">
+            <form id="wallet-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
                 <label for="wallet-provider">Wallet Provider</label>
                 <select id="wallet-provider" required>
                     <option value="">Select Provider</option>
@@ -371,10 +390,114 @@
                 <div id="wallet-fields"></div>
                 <button type="submit">Submit</button>
             </form>
-            <p id="wallet-error" class="error"></p>
         </div>
     </div>
     
-    <script src="${pageContext.request.contextPath}/user/script/booking.js"></script>
+    <!-- <script src="${pageContext.request.contextPath}/user/script/booking.js"></script>-->
+    
+    <script>
+ // Toggle accordion sections
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const accordion = header.parentElement;
+            accordion.classList.toggle('active');
+        });
+    });
+    
+    // Select payment method
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', () => {
+            // Clear previous selection
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Select current option
+            option.classList.add('selected');
+            
+            // Check the radio button
+            const radio = option.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+        });
+    });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const proceedBtn = document.getElementById('proceed-btn');
+    const modals = {
+        'credit-card': document.getElementById('credit-card-modal'),
+        'upi': document.getElementById('upi-modal'),
+        'net-banking': document.getElementById('net-banking-modal'),
+        'wallet': document.getElementById('wallet-modal')
+    };
+    
+    //console.log(modals)
+
+    // Open modal when Proceed is clicked
+    proceedBtn.addEventListener('click', () => {
+        const selectedMethod = document.querySelector('input[name="payment-method"]:checked').id;
+		console.log(selectedMethod)
+        openModal(modals[selectedMethod]);
+    });
+
+    // Close modal
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', () => {
+            closeModal(closeBtn.closest('.modal'));
+        });
+    });
+
+
+    // Wallet Form Handling
+    const walletProvider = document.getElementById('wallet-provider');
+    const walletFields = document.getElementById('wallet-fields');
+    walletProvider.addEventListener('change', () => {
+        walletFields.innerHTML = '';
+        switch (walletProvider.value) {
+            case 'paytm':
+                walletFields.innerHTML = `
+                    <label for="phone">Phone Number</label>
+                    <input type="number" id="phone" pattern="^\d{10}$" 
+        			    title="Account number must be exactly 10 digits."
+        				value="1234567890" value="9876543210" required>
+                    
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="123456" required>
+                `;
+                break;
+            case 'phonepe':
+                walletFields.innerHTML = `
+                    <label for="phone">Phone Number</label>
+                    <input type="number" id="phone" pattern="^\d{10}$" 
+        			title="Account number must be exactly 10 digits." 
+        			value="9876543210" required><br>
+        			
+                    <label for="pin">PIN</label>
+                    <input type="password" id="pin" value="123456" required>
+                `;
+                break;
+            case 'googlepay':
+                walletFields.innerHTML = `
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="mayur@gmail.com" required><br>
+                    
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="123456" required>
+                `;
+                break;
+        }
+    });
+
+    // Helper Functions
+    function openModal(modal) {
+        modal.style.display = 'block';
+    }
+
+    function closeModal(modal) {
+        modal.style.display = 'none';
+    }
+
+});
+    </script>
 </body>
 </html>

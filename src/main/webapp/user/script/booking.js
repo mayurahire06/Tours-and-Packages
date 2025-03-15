@@ -21,8 +21,6 @@
                 const radio = option.querySelector('input[type="radio"]');
                 radio.checked = true;
                 
-                // Update hidden input for form submission
-                document.getElementById('selected-payment-method').value = radio.id;
             });
         });
 
@@ -38,6 +36,7 @@
         // Open modal when Proceed is clicked
         proceedBtn.addEventListener('click', () => {
             const selectedMethod = document.querySelector('input[name="payment-method"]:checked').id;
+			console.log(selectedMethod)
             openModal(modals[selectedMethod]);
         });
 
@@ -48,76 +47,6 @@
             });
         });
 
-        // Credit/Debit Card Form Validation
-        document.getElementById('credit-card-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const cardNumber = document.getElementById('card-number').value;
-            const expiry = document.getElementById('expiry').value;
-            const cvv = document.getElementById('cvv').value;
-            const cardholderName = document.getElementById('cardholder-name').value;
-            const error = document.getElementById('credit-card-error');
-
-            if (!/^\d{13,19}$/.test(cardNumber)) {
-                error.textContent = 'Card number must be 13-19 digits.';
-                return;
-            }
-            if (!/^(0[1-9]|1[0-2])\/\d{4}$/.test(expiry) || !isFutureDate(expiry)) {
-                error.textContent = 'Invalid or expired date (MM/YYYY).';
-                return;
-            }
-            if (!/^\d{3,4}$/.test(cvv)) {
-                error.textContent = 'CVV must be 3 or 4 digits.';
-                return;
-            }
-            if (!cardholderName.trim()) {
-                error.textContent = 'Cardholder name is required.';
-                return;
-            }
-            error.textContent = '';
-            alert('Credit/Debit Card details submitted successfully!');
-            closeModal(modals['credit-card']);
-        });
-
-        // UPI Form Validation
-        document.getElementById('upi-form').addEventListener('submit', (e) => {
-            //e.preventDefault();
-            const upiId = document.getElementById('upi-id').value;
-            const upiPin = document.getElementById('upi-pin').value;
-            const error = document.getElementById('upi-error');
-
-            if (!/@/.test(upiId)) {
-                error.textContent = 'UPI ID must contain "@" (e.g., example@upi).';
-                return;
-            }
-            if (!/^\d{4,6}$/.test(upiPin)) {
-                error.textContent = 'PIN must be 4-6 digits.';
-                return;
-            }
-            error.textContent = '';
-            //alert('UPI details submitted successfully!');
-            closeModal(modals['upi']);
-        });
-
-        // Net Banking Form Validation
-        document.getElementById('net-banking-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const bankName = document.getElementById('bank-name').value;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const error = document.getElementById('net-banking-error');
-
-            if (!bankName) {
-                error.textContent = 'Please select a bank.';
-                return;
-            }
-            if (!username.trim() || !password.trim()) {
-                error.textContent = 'All fields are required.';
-                return;
-            }
-            error.textContent = '';
-            alert('Net Banking details submitted successfully!');
-            closeModal(modals['net-banking']);
-        });
 
         // Wallet Form Handling
         const walletProvider = document.getElementById('wallet-provider');
@@ -128,25 +57,25 @@
                 case 'paytm':
                     walletFields.innerHTML = `
                         <label for="phone">Phone Number</label>
-                        <input type="text" id="phone" placeholder="9876543210" required>
+                        <input type="text" id="phone" value="9876543210" required>
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Password" required>
+                        <input type="password" id="password" value="1234" required>
                     `;
                     break;
                 case 'phonepe':
                     walletFields.innerHTML = `
                         <label for="phone">Phone Number</label>
-                        <input type="text" id="phone" placeholder="9876543210" required>
+                        <input type="text" id="phone" value="9876543210" required>
                         <label for="pin">PIN</label>
-                        <input type="password" id="pin" placeholder="****" required>
+                        <input type="password" id="pin" value="1234" required>
                     `;
                     break;
                 case 'googlepay':
                     walletFields.innerHTML = `
                         <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="user@gmail.com" required>
+                        <input type="email" id="email" value="mayur@gmail.com" required>
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Password" required>
+                        <input type="password" id="password" value="Password" required>
                     `;
                     break;
             }
@@ -205,11 +134,4 @@
             modal.querySelector('.error').textContent = '';
         }
 
-        function isFutureDate(expiry) {
-            const [month, year] = expiry.split('/').map(Number);
-            const today = new Date();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth() + 1;
-            return year > currentYear || (year === currentYear && month >= currentMonth);
-        }
     });
