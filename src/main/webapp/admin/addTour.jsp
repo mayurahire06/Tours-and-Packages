@@ -87,15 +87,15 @@
                         <div class="mb-3">
                             <label class="form-label required">Transportation</label><br>
                             <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="bus" name="transportation" value="bus" onclick="toggleSourceField()">
+                                <input type="radio" class="form-check-input" id="bus" name="transportation" value="bus" onclick="toggleSourceField()">
                                 <label class="form-check-label" for="bus">Bus</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="train" name="transportation" value="train" onclick="toggleSourceField()">
+                                <input type="radio" class="form-check-input" id="train" name="transportation" value="train" onclick="toggleSourceField()">
                                 <label class="form-check-label" for="train">Train</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="flight" name="transportation" value="flight" onclick="toggleSourceField()">
+                                <input type="radio" class="form-check-input" id="flight" name="transportation" value="flight" onclick="toggleSourceField()">
                                 <label class="form-check-label" for="flight">Flight</label>
                             </div>
                         </div>
@@ -360,22 +360,39 @@ document.querySelector('form').addEventListener('submit', function(e) {
 
 //Transportation Details Toggle
 document.addEventListener("DOMContentLoaded", function() {
-    const busCheckbox = document.getElementById("bus");
-   const trainCheckbox = document.getElementById("train");
-   const flightCheckbox = document.getElementById("flight");
+    const busRadio = document.getElementById("bus");
+    const trainRadio = document.getElementById("train");
+    const flightRadio = document.getElementById("flight");
 
     const busDetails = document.getElementById("busDetails");
     const trainDetails = document.getElementById("trainDetails");
     const flightDetails = document.getElementById("flightDetails");
 
-    function toggleForm(checkbox, details) {
-       details.classList.toggle("d-none", !checkbox.checked);
+    function toggleDetails() {
+        // Hide all details sections
+        busDetails.classList.add("d-none");
+        trainDetails.classList.add("d-none");
+        flightDetails.classList.add("d-none");
+
+        // Show the selected details section
+        if (busRadio.checked) {
+            busDetails.classList.remove("d-none");
+        } else if (trainRadio.checked) {
+            trainDetails.classList.remove("d-none");
+        } else if (flightRadio.checked) {
+            flightDetails.classList.remove("d-none");
+        }
     }
 
-    if (busCheckbox) busCheckbox.addEventListener("change", () => toggleForm(busCheckbox, busDetails));
-    if (trainCheckbox) trainCheckbox.addEventListener("change", () => toggleForm(trainCheckbox, trainDetails));
-    if (flightCheckbox) flightCheckbox.addEventListener("change", () => toggleForm(flightCheckbox, flightDetails));
+    // Add event listeners to all radio buttons
+    if (busRadio) busRadio.addEventListener("change", toggleDetails);
+    if (trainRadio) trainRadio.addEventListener("change", toggleDetails);
+    if (flightRadio) flightRadio.addEventListener("change", toggleDetails);
+
+    // Initialize the state on page load
+    toggleDetails();
 });
+
 
 //Toggle for the source field
 function toggleSourceField() {

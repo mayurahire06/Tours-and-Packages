@@ -72,7 +72,7 @@
                             <h4></h4>
                         </div>
                         <div class="info-item">
-                            <p>2.Package Add-ons -></p>
+                            <p>2.Packag Add-ons -></p>
                             <h4></h4>
                         </div>
                         <div class="info-item">
@@ -301,7 +301,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Credit/Debit Card Details</h2>
-            <form id="credit-card-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
+            <form id="credit-card-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
                 <label for="card-number">Card Number</label>
                 <input type="number" id="card-number" 
                  pattern="^\d{13,19}$"
@@ -330,7 +330,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter UPI Details</h3>
-            <form id="upi-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
+            <form id="upi-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
                 <label for="upi-id">UPI ID</label>
                 <input type="text" id="upi-id" pattern=".+@.+" 
                 title="Please enter a valid upi id."
@@ -351,7 +351,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Net Banking Credentials</h3>
-            <form id="net-banking-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
+            <form id="net-banking-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
                 <label for="bank-name">Bank Name</label>
                 <select id="bank-name" required>
                     <option value="">Select Bank</option>
@@ -379,7 +379,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Wallet Details</h3>
-            <form id="wallet-form" action="${pageContext.request.contextPath}/user/tic1.jsp" target="_blank">
+            <form id="wallet-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
                 <label for="wallet-provider">Wallet Provider</label>
                 <select id="wallet-provider" required>
                     <option value="">Select Provider</option>

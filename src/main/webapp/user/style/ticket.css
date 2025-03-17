@@ -1,0 +1,276 @@
+@charset "UTF-8";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f3f4f6;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto; /* Ensure centering in both screen and print */
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.primary-button {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+}
+
+.outline-button {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.ticket-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%; /* Ensure it respects container width */
+}
+
+.ticket-header {
+    background-color: #4f46e5;
+    color: white;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    height: 64px;
+    width: 64px;
+    border-radius: 50%;
+    background-color: white;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-body {
+    padding: 24px;
+}
+
+.ticket-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .ticket-content {
+        flex-direction: row;
+    }
+}
+
+.ticket-details {
+    flex: 1;
+}
+
+.ticket-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.detail-group {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.detail-icon {
+    color: #4f46e5;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.detail-label {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.detail-value {
+    font-weight: 500;
+}
+
+.detail-subtext {
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.ticket-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.qr-container {
+    border: 1px solid #e5e7eb;
+    padding: 8px;
+    background-color: white;
+}
+
+.qr-text {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.confirmation-stamp {
+    width: 128px;
+    height: 128px;
+    border: 4px solid #16a34a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-20deg);
+}
+
+.stamp-text {
+    text-align: center;
+}
+
+.stamp-title {
+    color: #16a34a;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.stamp-date {
+    color: #16a34a;
+    font-size: 12px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.itinerary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .itinerary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.itinerary-item {
+    background-color: #f3f4f6;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-amount {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.price-text {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.booker-name {
+    font-weight: 500;
+}
+
+.footer-text {
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.divider {
+    border-top: 1px solid #e5e7eb;
+    margin: 24px 0;
+}
+
+@media print {
+    .print-hidden {
+        display: none !important; /* Hide buttons during print */
+    }
+    
+    body {
+        background-color: white !important;
+        padding: 0 !important; /* Remove padding for print */
+        display: block !important; /* Avoid flex issues in print */
+        min-height: auto !important;
+    }
+    
+    .container {
+        max-width: 100%; /* Full width for print */
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .ticket-card {
+        box-shadow: none !important; /* Remove shadow for cleaner print */
+        border: 1px solid #e5e7eb; /* Optional: add border for definition */
+        width: 100%; /* Ensure it fits page */
+    }
+    
+    .ticket-content {
+        flex-direction: column !important; /* Stack vertically for print */
+        gap: 16px !important;
+    }
+    
+    .itinerary-grid {
+        grid-template-columns: 1fr !important; /* Single column for print */
+    }
+}

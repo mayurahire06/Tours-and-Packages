@@ -32,13 +32,11 @@
     int basePrice = 0, capacity = 0, disPrice=0;
     String s_date = "", dest = "", transport = "", title = "", description="", hotel="", location="";
     Map<String, Integer> transportPrices = new HashMap<>();
-    List<String> transportOptions = new ArrayList<>();
     NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
     String itineraryContent = "";
-    String fileName = "";
-
-    // Get tour ID from request
-    int id = 0;
+    String fileName = ""; 
+	
+    int id = 0;  // Get tour ID from request
     try {
         String idParam = request.getParameter("id");
         id = (idParam != null && !idParam.trim().isEmpty()) ? Integer.parseInt(idParam) : 0;
@@ -65,6 +63,7 @@
                     capacity = tourRs.getInt("capacity");
                     dest = tourRs.getString("dest");
                     transport = tourRs.getString("transport");
+                    //System.out.println(transport);
                     title = tourRs.getString("title");
                     description = tourRs.getString("descr");
                     if (title == null || title.isEmpty()) {
@@ -94,13 +93,11 @@
 
         // Process transport options
         if (transport != null && !transport.trim().isEmpty()) {
-            for (String transportType : transport.split(",")) {
-                transportType = transportType.trim().toLowerCase();
-                transportOptions.add(transportType);
+                //transportOptions.add(transport);
 
                 // Get price for each transport type
                 String transportQuery = "";
-                switch(transportType) {
+                switch(transport) {
                     case "train":
                         transportQuery = "SELECT trainTicket FROM train WHERE t_id = ?";
                         break;
@@ -117,13 +114,12 @@
                         transportStmt.setInt(1, id);
                         ResultSet transportRs = transportStmt.executeQuery();
                         if (transportRs.next()) {
-                            transportPrices.put(transportType, transportRs.getInt(1));
+                            transportPrices.put(transport, transportRs.getInt(1));
                             //HttpSession transportSession = request.getSession(false);
                             userSession.setAttribute("transportationPrice", transportRs.getInt(1));
                         }
                     }
                 }
-            }
         }
 
         // Set first image
@@ -243,19 +239,18 @@
                             <select id="transportSelect" onchange="updateTotalPrice()" 
                                     class="w-full p-2 border border-gray-300 rounded-md bg-white">
                                 <option value="none" data-price="0" selected>Select Transportation</option>
-                                <% for (String transportType : transportOptions) { 
-                                    Integer price = transportPrices.get(transportType);
-                                    String displayName = transportType.substring(0, 1).toUpperCase() + transportType.substring(1);
+                                <%
+                                    Integer price = transportPrices.get(transport);
+                                    String displayName = transport.substring(0, 1).toUpperCase() + transport.substring(1);
                                     String displayPrice = (price != null && price > 0) ? nf.format(price) : null;
                                 %>
-                                    <option value="<%= transportType %>" data-price="<%= price != null ? price : 0 %>">
+                                    <option value="<%= transport %>" data-price="<%= price != null ? price : 0 %>">
                                         <% if(displayPrice != null) { %>
                                             <%= displayName %> (+₹<%= displayPrice %>)
                                         <% } else { %>
                                             <%= displayName %>
                                         <% } %>
                                     </option>
-                                <% } %>
                             </select>
                         </div>
 

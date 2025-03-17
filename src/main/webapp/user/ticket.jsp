@@ -5,272 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExploreEase: India Edition - Tour Ticket</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #f3f4f6;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 800px;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .primary-button {
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-        }
-        
-        .outline-button {
-            background-color: white;
-            border: 1px solid #d1d5db;
-            color: #374151;
-        }
-        
-        .ticket-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .ticket-header {
-            background-color: #4f46e5;
-            color: white;
-            padding: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo {
-            height: 64px;
-            width: 64px;
-            border-radius: 50%;
-            background-color: white;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .ticket-body {
-            padding: 24px;
-        }
-        
-        .ticket-content {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-        
-        @media (min-width: 768px) {
-            .ticket-content {
-                flex-direction: row;
-            }
-        }
-        
-        .ticket-details {
-            flex: 1;
-        }
-        
-        .ticket-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 16px;
-        }
-        
-        .detail-group {
-            margin-bottom: 16px;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .detail-icon {
-            color: #4f46e5;
-            width: 20px;
-            height: 20px;
-            margin-top: 2px;
-        }
-        
-        .detail-label {
-            font-size: 14px;
-            color: #6b7280;
-        }
-        
-        .detail-value {
-            font-weight: 500;
-        }
-        
-        .detail-subtext {
-            font-size: 14px;
-            margin-top: 4px;
-        }
-        
-        .ticket-sidebar {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 24px;
-        }
-        
-        .qr-container {
-            border: 1px solid #e5e7eb;
-            padding: 8px;
-            background-color: white;
-        }
-        
-        .qr-text {
-            font-size: 12px;
-            color: #6b7280;
-            text-align: center;
-            margin-top: 4px;
-        }
-        
-        .confirmation-stamp {
-            width: 128px;
-            height: 128px;
-            border: 4px solid #16a34a;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: rotate(-20deg);
-        }
-        
-        .stamp-text {
-            text-align: center;
-        }
-        
-        .stamp-title {
-            color: #16a34a;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        
-        .stamp-date {
-            color: #16a34a;
-            font-size: 12px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        
-        .itinerary-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        
-        @media (min-width: 768px) {
-            .itinerary-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        .itinerary-item {
-            background-color: #f3f4f6;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .price-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .price-amount {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .price-text {
-            font-size: 12px;
-            color: #6b7280;
-        }
-        
-        .booker-name {
-            font-weight: 500;
-        }
-        
-        .footer-text {
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-        }
-        
-        .divider {
-            border-top: 1px solid #e5e7eb;
-            margin: 24px 0;
-        }
-        
-        @media print {
-            .print-hidden {
-                display: none !important;
-            }
-            
-            body {
-                background-color: white !important;
-            }
-        }
-    </style>
-    <script>
-        function printTicket() {
-            window.print();
-        }
-        
-        function downloadTicket() {
-            // In a real application, you would generate a PDF here
-            // For this demo, we'll just trigger the print dialog which can save as PDF
-            window.print();
-        }
-    </script>
+ 	<link rel="stylesheet" href="./style/ticket.css">
 </head>
+
+<%
+ HttpSession ticketSession = request.getSession(false);
+    if (ticketSession == null || ticketSession.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/user/loginRegister.jsp");
+        return;
+    }
+%>
+    
 <body>
     <div class="container">
         <div class="button-container print-hidden">
-            <button onclick="printTicket()" class="button outline-button">
+            <button onclick="window.print()" class="button outline-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 6 2 18 2 18 9"></polyline>
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
@@ -278,7 +27,7 @@
                 </svg>
                 Print Ticket
             </button>
-            <button onclick="downloadTicket()" class="button primary-button">
+            <button onclick="window.print()" class="button primary-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>

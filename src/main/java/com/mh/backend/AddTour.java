@@ -94,7 +94,7 @@ public class AddTour extends HttpServlet {
         	int duration = Integer.parseInt(request.getParameter("duration"));
         	int capacity = Integer.parseInt(request.getParameter("capacity"));
         	String destination = request.getParameter("destination");
-        	String transportation[] = request.getParameterValues("transportation");
+        	String transportation = request.getParameter("transportation");
         	int pdprice = Integer.parseInt(request.getParameter("pdprice"));
         	Part filePart = request.getPart("itinerary");
 
@@ -156,14 +156,7 @@ public class AddTour extends HttpServlet {
             
             //
             //
-            
-            
-            
-            
-            
-            
-            
-            
+
             
         	String hotelName = request.getParameter("hotelName");
         	String hotelLocation = request.getParameter("hotelLocation");
@@ -171,17 +164,17 @@ public class AddTour extends HttpServlet {
         	
         	// Check which transportation selected
             if (transportation != null) {
-                for (String transport : transportation) {
-                    if (transport.equalsIgnoreCase("bus")) {
+               // for (String transport : transportation) {
+                    if (transportation.equalsIgnoreCase("bus")) {
                         isBusSelected = true;  
                     }
-                    if (transport.equalsIgnoreCase("train")) {
+                    if (transportation.equalsIgnoreCase("train")) {
                     	isTrainSelected = true;
                     }
-                    if (transport.equalsIgnoreCase("flight")) {
+                    if (transportation.equalsIgnoreCase("flight")) {
                     	isFlightSelected = true;
                     }
-                }
+                //}
                 source = request.getParameter("source");
                 
           	   //Bus selected
@@ -224,7 +217,7 @@ public class AddTour extends HttpServlet {
 
         	
         	// Convert transportation array to a comma-separated string
-        	String transportString = (transportation != null) ? String.join(",", transportation) : "Not Available";
+        	String transportString = (transportation != null) ? transportation : "Not Available";
         	
             // Database insertion
             	conn = DBConnection.getConnection();
