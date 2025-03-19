@@ -33,14 +33,15 @@ public class BookingServlet extends HttpServlet {
             return;
         }
         
-        Integer userId = (Integer) bookServletSession.getAttribute("uid");
-        if (userId == null) {
-            response.sendRedirect("/user/loginRegister.jsp");
-            return;
-        }
+        //Integer userId = (Integer) bookServletSession.getAttribute("uid");
+        //if (userId == null) {
+         //   response.sendRedirect("/user/loginRegister.jsp");
+         //   return;
+        //}
 
         // 2. Parameter validation
         String tourIdParam = request.getParameter("tourId");
+
         int tourId;
         try {
             tourId = Integer.parseInt(tourIdParam);
@@ -59,30 +60,28 @@ public class BookingServlet extends HttpServlet {
         }
 
         String transportType = request.getParameter("transportType");
-        //if (transportType == null || transportType.trim().isEmpty()) {
-        //    transportType = "Not Specified"; // Default value if transportType is missing
-       // }
+
 
         // 3. Initialize variables
-        String destination = "Not Available";
-        String startDate = "Not Available";
-        String endDate = "Not Available";
+        //String destination = "Not Available";
+        //String startDate = "Not Available";
+        //String endDate = "Not Available";
         String itineraryContent = "";
         String fileName = "";
 
         try (Connection conn = DBConnection.getConnection()) {
             // Start transaction
-            conn.setAutoCommit(false);
-
+           // conn.setAutoCommit(false);
+        
             // 4. Tour query
-            String tourQuery = "SELECT dest, s_date, e_date, itinerary FROM tour WHERE t_id = ?";
+            String tourQuery = "SELECT itinerary FROM tour WHERE t_id = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(tourQuery)) {
                 pstmt.setInt(1, tourId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
-                        destination = rs.getString("dest");
-                        startDate = rs.getString("s_date");
-                        endDate = rs.getString("e_date");
+                        //destination = rs.getString("dest");
+                        //startDate = rs.getString("s_date");
+                        //endDate = rs.getString("e_date");
 
                         String filePath = rs.getString("itinerary");
                         if (filePath != null && !filePath.trim().isEmpty()) {
@@ -104,7 +103,7 @@ public class BookingServlet extends HttpServlet {
             }
 
             // 5. Insert into booking table and get book_id
-            String bookingSql = "INSERT INTO booking (user_id, t_id, members, transport) VALUES (?, ?, ?, ?)";
+            /*String bookingSql = "INSERT INTO booking (user_id, t_id, members, transport) VALUES (?, ?, ?, ?)";
             int bookId;
             try (PreparedStatement bookStmt = conn.prepareStatement(bookingSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 bookStmt.setInt(1, userId);
@@ -162,7 +161,7 @@ public class BookingServlet extends HttpServlet {
             }
 
             // Commit transaction
-            conn.commit();
+            conn.commit();*/
 
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -175,18 +174,20 @@ public class BookingServlet extends HttpServlet {
         }
 
         // 7. Set request attributes
-        //request.setAttribute("destination", destination);
-        //request.setAttribute("startDate", startDate);
-        //request.setAttribute("endDate", endDate);
-        //request.setAttribute("tourId", tourId);
+        //bookServletSession.setAttribute("destination", destination);
+        //bookServletSession.setAttribute("startDate", startDate);
+        //bookServletSession.setAttribute("endDate", endDate);
         //request.setAttribute("userId", userId);
-        request.setAttribute("members", members);
-        request.setAttribute("transportType", transportType);
-        request.setAttribute("totalPrice", request.getParameter("totalPrice"));
-        request.setAttribute("travelerDetails", request.getParameter("travelerDetails"));
-        request.setAttribute("itineraryContent", itineraryContent);
+        bookServletSession.setAttribute("tourId", tourId);
+        bookServletSession.setAttribute("members", membersParam);
+        bookServletSession.setAttribute("transportType", transportType);
+        bookServletSession.setAttribute("totalPrice", request.getParameter("totalPrice"));
+        bookServletSession.setAttribute("travelerDetails", request.getParameter("travelerDetails"));
+        bookServletSession.setAttribute("itineraryContent", itineraryContent);
 
         // 8. Forward to JSP
-        request.getRequestDispatcher("/user/booking.jsp").forward(request, response);
+        //request.getRequestDispatcher("/user/booking.jsp").include(request, response); //this works
+        //request.getRequestDispatcher("/user/booking.jsp").forward(request, response); //THIS DOESN'T WORK
+        response.sendRedirect("./user/booking.jsp"); //This is also works
     }
 }

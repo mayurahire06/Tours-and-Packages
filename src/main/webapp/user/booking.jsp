@@ -28,28 +28,36 @@
 <%
     // Authentication check
     HttpSession bookJspSession = request.getSession(false);
+
     if (bookJspSession == null || bookJspSession.getAttribute("user") == null) {
         response.sendRedirect(request.getContextPath() + "/user/loginRegister.jsp");
         return;
     }
 
     // Get attributes with null checks
-    String itineraryContent = (String) request.getAttribute("itineraryContent");
+    String itineraryContent = (String) bookJspSession.getAttribute("itineraryContent");
   
     
-    String travelerDetailsJson = (String) request.getAttribute("travelerDetails");
+    String travelerDetailsJson = (String) bookJspSession.getAttribute("travelerDetails");
+    
+    //System.out.println("travelerDetailsJson: " +travelerDetailsJson);
     JSONArray travelers = new JSONArray(travelerDetailsJson);
     
     if (travelerDetailsJson != null && !travelerDetailsJson.trim().isEmpty()) {
         try {
             travelers = new JSONArray(travelerDetailsJson);
-        } catch (Exception e) {	
-            travelers = new JSONArray(); // Empty array as fallback
+        } catch (Exception e) {
+            e.printStackTrace();
+            travelers = new JSONArray(); // Fallback to empty on error
         }
-    } else {
-        travelers = new JSONArray(); // Empty array as fallback
     }
+    
+    
+    String tourMembers = (String) bookJspSession.getAttribute("members");
+    String transportType = (String) bookJspSession.getAttribute("transportType"); 
+    //System.out.println("members: " + tourMembers);
 %>
+
 <body>
 <div class="container">
     <!-- Navigation -->
@@ -95,7 +103,7 @@
                     </div>
                     <div class="accordion-content">
                         <h3>Traveler Details</h3>
-					    <ul>
+					   	<ul>
 					        <% for (int i = 0; i < travelers.length(); i++) {
 					            JSONObject traveler = travelers.getJSONObject(i);
 					        %>
@@ -105,12 +113,11 @@
 					            <strong>Gender:</strong> <%= traveler.getString("gender") %>
 					        </li>
 					        <% } %>
-					    </ul>		                
+					    </ul>                
 					 </div>
                 </div>
                 
-            
-                
+             
                 <!-- 2. Package Add-Ons -->
                 <div class="accordion">
                     <div class="accordion-header">
@@ -255,7 +262,7 @@
                             <span>₹${taxesAndFees}0</span>
                         </div>
                         <div class="price-item">
-                            <span>Transport${requestScope.transportType}</span>
+                            <span>Transport Charges(<%= transportType %>)</span>
                             <span>₹ ${sessionScope.transportationPrice}</span>
                         </div>
                         
@@ -265,9 +272,7 @@
                         </div>
                         
                     </div>
-                    
-
-                        
+                      
                         <div class="payment-option selected">
                             <input type="radio" id="credit-card" name="payment-method" checked>
                             <label for="credit-card">Credit/Debit Card</label>
@@ -301,7 +306,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Credit/Debit Card Details</h2>
-            <form id="credit-card-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
+            <form id="credit-card-form" action="${pageContext.request.contextPath}/TicketsServlet" method="post">
                 <label for="card-number">Card Number</label>
                 <input type="number" id="card-number" 
                  pattern="^\d{13,19}$"
@@ -319,9 +324,10 @@
                 <input type="text" id="cardholder-name" 
                 title="Card holder name is required."
                 value="Mayur Ahire" required>
-                
+
                 <button type="submit">Submit</button>
             </form>
+            <!-- <a href="../TicketsServlet">click here</a>-->
         </div>
     </div>
 
@@ -330,7 +336,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter UPI Details</h3>
-            <form id="upi-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
+            <form id="upi-form" action="../TicketServlet" target="_blank">
                 <label for="upi-id">UPI ID</label>
                 <input type="text" id="upi-id" pattern=".+@.+" 
                 title="Please enter a valid upi id."
@@ -351,7 +357,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Net Banking Credentials</h3>
-            <form id="net-banking-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
+            <form id="net-banking-form" action="../TicketServlet" target="_blank">
                 <label for="bank-name">Bank Name</label>
                 <select id="bank-name" required>
                     <option value="">Select Bank</option>
@@ -379,7 +385,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>Enter Wallet Details</h3>
-            <form id="wallet-form" action="${pageContext.request.contextPath}/user/ticket.jsp" target="_blank">
+            <form id="wallet-form" action="../TicketServlet" target="_blank">
                 <label for="wallet-provider">Wallet Provider</label>
                 <select id="wallet-provider" required>
                     <option value="">Select Provider</option>
