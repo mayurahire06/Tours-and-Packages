@@ -1,4 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="org.json.JSONArray" %>
+<%@ page import="org.json.JSONObject" %>
+<%@ page import="java.time.LocalDate"%>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +14,43 @@
 </head>
 
 <%
- HttpSession ticketSession = request.getSession(false);
-    if (ticketSession == null || ticketSession.getAttribute("user") == null) {
+ HttpSession ticketJspSession = request.getSession(false);
+    if (ticketJspSession == null || ticketJspSession.getAttribute("user") == null) {
         response.sendRedirect(request.getContextPath() + "/user/loginRegister.jsp");
         return;
     }
+    
+	String travelerDetailsJson = (String) ticketJspSession.getAttribute("travelerDetails");
+	    
+    //System.out.println("travelerDetailsJson: " +travelerDetailsJson);
+    JSONArray travelers = new JSONArray(travelerDetailsJson);
+    
+    if (travelerDetailsJson != null && !travelerDetailsJson.trim().isEmpty()) {
+        try {
+            travelers = new JSONArray(travelerDetailsJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+            travelers = new JSONArray(); // Fallback to empty on error
+        }
+    }
+    
+    String itineraryContent = (String) ticketJspSession.getAttribute("itineraryContent");
+    
+    //System.out.println("content: "+ itineraryContent);
+   // String source = (String) ticketJspSession.getAttribute("source");
+   
+   
+   // Get the current date
+   LocalDate currentDate = LocalDate.now();
+   // Define the formatter for "12 Mar 2024"
+   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+   //System.out.println("formatter: "+ formatter);
+   // Format the date
+   String formattedDate = currentDate.format(formatter);
+   
+   String source = (String) ticketJspSession.getAttribute("source");
+   //System.out.println("Souce: "+ source);
+
 %>
     
 <body>
@@ -66,7 +103,7 @@
             <div class="ticket-body">
                 <div class="ticket-content">
                     <div class="ticket-details">
-                        <h2 class="ticket-title">Golden Triangle Tour</h2>
+                        <h2 class="ticket-title">${sessionScope.title}</h2>
                         
                         <div class="detail-group">
                             <svg xmlns="http://www.w3.org/2000/svg" class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -74,8 +111,14 @@
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
                             <div>
-                                <p class="detail-label">Route</p>
-                                <p class="detail-value">New Delhi to Jaipur-Agra-Delhi</p>
+                            <%if(source.isEmpty() || source==null){ %>
+                            	<p class="detail-label">Destination: </p>
+                                <p class="detail-value">Lets meet at: ${sessionScope.destination}</p>
+                            <%}else{ %>
+                            	<p class="detail-label">Route: </p>
+                                <p class="detail-value">${sessionScope.source} <strong>to</strong> ${sessionScope.destination}</p>
+                            <%} %>                       
+                            
                             </div>
                         </div>
                         
@@ -88,7 +131,7 @@
                             </svg>
                             <div>
                                 <p class="detail-label">Travel Period</p>
-                                <p class="detail-value">15 Apr 2024 - 22 Apr 2024</p>
+                                <p class="detail-value">${sessionScope.startDate} - ${sessionScope.endDate}</p>
                             </div>
                         </div>
                         
@@ -100,22 +143,37 @@
                             </svg>
                             <div>
                                 <p class="detail-label">Transport</p>
-                                <p class="detail-value">Train + Bus</p>
+                                <p class="detail-value">${sessionScope.transportType}</p>
                                 <div class="detail-subtext">
-                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                <%if(source.equals("") || source == null){ %>
+                            	
+	                            <div style="display: flex; align-items: center; gap: 4px;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="10"></circle>
                                             <polyline points="12 6 12 12 16 14"></polyline>
                                         </svg>
-                                        <span>Departure: 08:30 AM from New Delhi Railway Station</span>
+                                        <span>Reach by yourself...!</span>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 6 12 12 16 14"></polyline>
-                                        </svg>
-                                        <span>Return: 06:45 PM to New Delhi Railway Station</span>
-                                    </div>
+                                  
+	                            	
+	                            <%}else{%>
+		                           <div style="display: flex; align-items: center; gap: 4px;">
+	                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+	                                            <circle cx="12" cy="12" r="10"></circle>
+	                                            <polyline points="12 6 12 12 16 14"></polyline>
+	                                        </svg>
+	                                        <span>Departure Time: ${departureTime}</span>
+	                                    </div>
+	                                  <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+	                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+	                                          <circle cx="12" cy="12" r="10"></circle>
+	                                          <polyline points="12 6 12 12 16 14"></polyline>
+	                                      </svg>
+	                                      <span>Arrival Time: ${arrivalTime}</span>
+	                                  </div>
+		                           
+	                           <%} %>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -128,11 +186,21 @@
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                             </svg>
                             <div>
-                                <p class="detail-label">Travelers (3)</p>
+                                <p class="detail-label">Travelers (${members})</p>
                                 <div class="detail-subtext">
-                                    <p>Rahul Sharma (35 yrs, Male)</p>
+                                	
+								        <% for (int i = 0; i < travelers.length(); i++) {
+								            JSONObject traveler = travelers.getJSONObject(i);
+								        %>
+								        <p>
+								            <strong><%= traveler.getString("name") %>:</strong> (<%= traveler.getString("age") %> yrs,<%= traveler.getString("gender") %>)
+
+								        </p>
+								        <% } %>
+								    
+                                    <!-- <p>Rahul Sharma (35 yrs, Male)</p>
                                     <p>Priya Sharma (32 yrs, Female)</p>
-                                    <p>Arjun Sharma (10 yrs, Male)</p>
+                                    <p>Arjun Sharma (10 yrs, Male)</p>-->
                                 </div>
                             </div>
                         </div>
@@ -150,36 +218,90 @@
                         <div class="confirmation-stamp">
                             <div class="stamp-text">
                                 <p class="stamp-title">CONFIRMED</p>
-                                <p class="stamp-date">12 Mar 2024</p>
+                                <p class="stamp-date"><%= formattedDate %></p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
+                
                 <!-- Itinerary -->
                 <div class="divider"></div>
                 <h3 class="section-title">Itinerary Overview</h3>
                 <div class="itinerary-grid">
-                    <div class="itinerary-item">Day 1: Delhi Sightseeing</div>
+                	<div id="itineraryContent">
+                    <% 
+                    if (itineraryContent != null && !itineraryContent.isEmpty()) {
+                        String[] days = itineraryContent.split("\n\n");
+                        for (String day : days) {
+                            if (day.trim().isEmpty()) continue;
+                            
+                            String[] lines = day.split("\n");
+                            if (lines.length > 0) {
+                                String dayTitle = lines[0].trim();
+                                //System.out.println("Day title: "+dayTitle);
+                    %>
+					<div class="itinerary-day mb-10">
+					    <h3 class="text-xl font-bold text-blue-600 mb-3 border-b border-blue-100 pb-2">
+					        <%= dayTitle %>
+					    </h3>
+					    <div class="space-y-3 pl-4">
+					        <% 
+					        for (int i = 1; i < lines.length; i++) {
+					            String activity = lines[i].trim();
+					            if (!activity.isEmpty()) {
+					                // Check for special pattern to highlight
+					                boolean isHighlight = activity.startsWith("**");
+					                if (isHighlight) {
+					                   activity = activity.substring(2).trim();
+					                }
+					        %>
+					                <div class="activity-item <%= isHighlight ? "font-semibold text-gray-800" : "text-gray-600" %>">
+					                   
+					                    <% if (isHighlight) { %>
+					                        <span class="highlight bg-yellow-100 px-2 py-1 rounded">
+					                            <%= activity %>
+					                        </span>
+					                    <% }  %>
+					                </div>
+					        <% 
+					            }
+					        }
+					        %>
+					    </div>
+					</div>
+					<%
+					        }
+					    }
+					} else { 
+					%>
+					    <p class="text-gray-500">No itinerary information available for this tour.</p>
+					<% } %>
+                </div>
+                
+                
+                    <!-- <div class="itinerary-item">Day 1: Delhi Sightseeing</div>
                     <div class="itinerary-item">Day 2: Delhi to Jaipur</div>
                     <div class="itinerary-item">Day 3-4: Jaipur Exploration</div>
                     <div class="itinerary-item">Day 5: Jaipur to Agra</div>
                     <div class="itinerary-item">Day 6-7: Agra Exploration</div>
-                    <div class="itinerary-item">Day 8: Return to Delhi</div>
+                    <div class="itinerary-item">Day 8: Return to Delhi</div>-->
                 </div>
+                
+                
                 
                 <!-- Price -->
                 <div class="divider"></div>
                 <div class="price-section">
                     <div>
                         <p class="detail-label">Total Amount Paid</p>
-                        <p class="price-amount">₹45,600</p>
-                        <p class="price-text">for 3 travelers</p>
+                        <p class="price-amount">₹${sessionScope.totalPrice}</p>
+                        <p class="price-text">for ${sessionScope.members} traveler(s)</p>
                     </div>
                     <div style="text-align: right;">
                         <p class="detail-label">Booked by</p>
-                        <p class="booker-name">Rahul Sharma</p>
-                        <p class="price-text">on 12 Mar 2024</p>
+                        <p class="booker-name">${sessionScope.user} ${sessionScope.lastname}</p>
+                        <p class="price-text">on <%= formattedDate %></p>
                     </div>
                 </div>
                 

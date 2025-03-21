@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ page import="org.json.JSONArray" %>
 <%@ page import="org.json.JSONObject" %>
+<%@ page import="java.util.*" %>
 <%@ page import="jakarta.servlet.http.HttpSession" %>
 
 <!DOCTYPE html>
@@ -52,10 +53,15 @@
         }
     }
     
-    
     String tourMembers = (String) bookJspSession.getAttribute("members");
-    String transportType = (String) bookJspSession.getAttribute("transportType"); 
     //System.out.println("members: " + tourMembers);
+    String transportType = (String) bookJspSession.getAttribute("transportType"); 
+
+   	List<String> list = Arrays.asList("bus", "train", "flight");
+
+    Object transportPrice = bookJspSession.getAttribute("transportationPrice");
+    //int transportPrice = (int)transportationPrice; 
+    //System.out.println("transportPrice: " + transportPrice.getClass().getName());
 %>
 
 <body>
@@ -71,7 +77,7 @@
             <div class="review-details">
                 <!-- Package Information -->
                 <div class="package-info">
-                    <h2>${title} Title</h2>
+                    <h2>${sessionScope.title}</h2>
                     <p>${packageDescription} Description</p>
                     
                     <div class="package-info-details">
@@ -262,8 +268,8 @@
                             <span>₹${taxesAndFees}0</span>
                         </div>
                         <div class="price-item">
-                            <span>Transport Charges(<%= transportType %>)</span>
-                            <span>₹ ${sessionScope.transportationPrice}</span>
+                            <span>Transport Charges(<%= transportType %>) </span><!-- yet to fix -->
+                            <span>₹<%= transportPrice == null ? 0 : "none".equals(transportType) ? 0 : transportPrice %></span>
                         </div>
                         
                         <div class="price-total">

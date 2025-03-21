@@ -63,12 +63,14 @@
                     capacity = tourRs.getInt("capacity");
                     dest = tourRs.getString("dest");
                     transport = tourRs.getString("transport");
-                    //System.out.println(transport);
+                    System.out.println("Transport type from view tour details:" + transport);
                     title = tourRs.getString("title");
                     description = tourRs.getString("descr");
-                    if (title == null || title.isEmpty()) {
-                        title = "Denali Experience Tour from Talkeetna"; // Default title if not available
-                    }
+                    
+                    userSession.setAttribute("title", title);
+                    //if (title == null || title.isEmpty()) {
+                     //   title = "Denali Experience Tour from Talkeetna"; // Default title if not available
+                    //}
                 }
 
                 // Collect images
@@ -114,12 +116,20 @@
                         transportStmt.setInt(1, id);
                         ResultSet transportRs = transportStmt.executeQuery();
                         if (transportRs.next()) {
-                            transportPrices.put(transport, transportRs.getInt(1));
-                            //HttpSession transportSession = request.getSession(false);
-                            userSession.setAttribute("transportationPrice", transportRs.getInt(1));
+                        	
+                            System.out.println("transportation price from view tour details: " + transportRs.getInt(1));
+                            if(transport.equalsIgnoreCase("Not Available")){
+                            	userSession.setAttribute("transportationPrice", 0);
+                            	transportPrices.put(transport, 0);
+                            }
+                            else{
+                            	transportPrices.put(transport, transportRs.getInt(1));
+                            	userSession.setAttribute("transportationPrice", transportRs.getInt(1));
+                            }
                         }
                     }
                 }
+             
         }
 
         // Set first image
